@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WA 70/720 Club Rankings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --border: #e0ddd5;
+    --border-strong: #c8c4bb;
+    --text: #1a1916;
+    --text-2: #6b6860;
+    --text-3: #9e9b95;
+    --accent: #2a5c3f;
+    --accent-light: #e8f0eb;
+    --gold: #b8892a;
+    --gold-bg: #fdf4e3;
+    --silver: #7a7e85;
+    --silver-bg: #f0f1f3;
+    --bronze: #8b5e3c;
+    --bronze-bg: #f5ede5;
+    --danger: #c0392b;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* ── Layout ── */
+  .page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .logo-area h1 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .logo-area h1 span { color: var(--accent); }
+  .logo-area p {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-top: 3px;
+    font-family: var(--mono);
+  }
+  .header-stats {
+    display: flex;
+    gap: 1.5rem;
+  }
+  .hstat { text-align: right; }
+  .hstat-n {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+  }
+  .hstat-l {
+    font-size: 11px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+
+  /* ── Add archer panel ── */
+  .add-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .add-panel h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-3);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+  .add-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .add-row input {
+    flex: 1;
+    min-width: 220px;
+    padding: 9px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 7px;
+    font-family: var(--sans);
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .add-row input:focus { border-color: var(--accent); }
+  .add-row input::placeholder { color: var(--text-3); }
+  .btn {
+    padding: 9px 18px;
+    border-radius: 7px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #1e4530; }
+  .btn-ghost { background: transparent; color: var(--text-2); border-color: var(--border-strong); }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+  .btn-sm { padding: 6px 12px; font-size: 13px; }
+
+  /* ── Archer tags ── */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.75rem; }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1px solid #c4d9cb;
+    border-radius: 20px;
+    padding: 4px 10px 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .tag .count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #4a7c5f;
+  }
+  .tag-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #4a7c5f;
+    font-size: 15px;
+    line-height: 1;
+    padding: 0 2px;
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+  }
+  .tag-remove:hover { opacity: 1; }
+
+  /* ── Filters ── */
+  .filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-group { display: flex; align-items: center; gap: 6px; }
+  .filter-group label { font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+  select {
+    padding: 6px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 13px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+  }
+  select:focus { border-color: var(--accent); }
+  .filters-right { margin-left: auto; display: flex; gap: 6px; }
+
+  /* ── Status bar ── */
+  .status-bar {
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--text-3);
+    margin-bottom: 1rem;
+    min-height: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-bar.loading { color: var(--accent); }
+  .status-bar.error { color: var(--danger); }
+  .spinner {
+    width: 12px; height: 12px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  .status-bar.loading .spinner { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Table ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--bg); }
+  th {
+    padding: 10px 16px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-3);
+    font-weight: 500;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--text); }
+  th.sorted { color: var(--accent); }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #fafaf8; }
+
+  .rank-cell { width: 48px; }
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .rank-1 { background: var(--gold-bg); color: var(--gold); }
+  .rank-2 { background: var(--silver-bg); color: var(--silver); }
+  .rank-3 { background: var(--bronze-bg); color: var(--bronze); }
+  .rank-other { background: var(--bg); color: var(--text-3); }
+
+  .archer-name { font-weight: 500; }
+  .score-val {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .score-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .score-bar {
+    height: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    min-width: 4px;
+    opacity: 0.4;
+  }
+  .rating-val {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .event-name {
+    font-size: 13px;
+    color: var(--text-2);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .event-name a { color: var(--accent); text-decoration: none; }
+  .event-name a:hover { text-decoration: underline; }
+  .date-val { font-family: var(--mono); font-size: 12px; color: var(--text-3); }
+  .div-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    background: var(--bg);
+    color: var(--text-2);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  /* ── Empty / no data ── */
+  .empty {
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+  .empty-icon {
+    font-size: 36px;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+  .empty h3 { font-size: 16px; font-weight: 500; color: var(--text-2); margin-bottom: 0.5rem; }
+  .empty p { font-size: 13px; color: var(--text-3); }
+
+  /* ── Manual import ── */
+  .manual-panel {
+    margin-top: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .manual-toggle {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--text-2);
+    text-align: left;
+  }
+  .manual-toggle:hover { color: var(--text); }
+  .manual-toggle .arrow { transition: transform 0.2s; }
+  .manual-toggle.open .arrow { transform: rotate(180deg); }
+  .manual-body {
+    display: none;
+    padding: 0 1.5rem 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .manual-body.open { display: block; }
+  .manual-body p { font-size: 13px; color: var(--text-2); margin: 1rem 0 0.75rem; }
+  .manual-body ol { font-size: 13px; color: var(--text-2); padding-left: 1.5rem; margin-bottom: 1rem; }
+  .manual-body ol li { margin-bottom: 4px; }
+  .manual-body code { font-family: var(--mono); font-size: 12px; background: var(--bg); padding: 1px 5px; border-radius: 3px; }
+  .manual-fields { display: flex; flex-direction: column; gap: 8px; }
+  .manual-fields input { padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: 6px; font-family: var(--sans); font-size: 14px; background: var(--bg); color: var(--text); outline: none; }
+  .manual-fields input:focus { border-color: var(--accent); }
+  .manual-fields textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg);
+    color: var(--text);
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+  }
+  .manual-fields textarea:focus { border-color: var(--accent); }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-3);
+    font-family: var(--mono);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 600px) {
+    .header-stats { display: none; }
+    th:nth-child(5), td:nth-child(5),
+    th:nth-child(6), td:nth-child(6) { display: none; }
+    .score-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="logo-area">
+      <h1>WA 70/720 <span>Club Rankings</span></h1>
+      <p>Powered by Archers Diary · Outdoor Recurve</p>
+    </div>
+    <div class="header-stats">
+      <div class="hstat">
+        <div class="hstat-n" id="hArchers">0</div>
+        <div class="hstat-l">Archers</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n" id="hScores">0</div>
+        <div class="hstat-l">Scores</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n" id="hTop">—</div>
+        <div class="hstat-l">Top score</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Add archer -->
+  <div class="add-panel">
+    <h3>Add archers</h3>
+    <div class="add-row">
+      <input type="text" id="nameInput" placeholder="Full name as on Archers Diary (e.g. Ryan Tyack)" autocomplete="off">
+      <button class="btn btn-primary" onclick="addArcher()">Fetch scores</button>
+      <button class="btn btn-ghost" onclick="refreshAll()">Refresh all</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearAll()" style="color:#c0392b;border-color:#e8b4b0">Clear all</button>
+    </div>
+    <div class="tags" id="archerTags"></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="filter-group">
+      <label>View</label>
+      <select id="viewMode" onchange="renderTable()">
+        <option value="best">Best score ever</option>
+        <option value="recent">Best — last 12 months</option>
+        <option value="all">All scores</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Division</label>
+      <select id="divFilter" onchange="renderTable()">
+        <option value="">All</option>
+        <option value="Recurve">Recurve</option>
+        <option value="Compound">Compound</option>
+        <option value="Barebow Recurve">Barebow</option>
+      </select>
+    </div>
+    <div class="filters-right">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">Export CSV</button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="status-bar" id="statusBar">
+    <div class="spinner"></div>
+    <span id="statusText">Add an archer above to get started.</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div id="tableContainer">
+      <div class="empty">
+        <div class="empty-icon">🏹</div>
+        <h3>No archers yet</h3>
+        <p>Add archers by name to build your club rankings.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual import -->
+  <div class="manual-panel">
+    <button class="manual-toggle" onclick="toggleManual(this)">
+      <span>Manual import — paste page source (use if fetch is blocked)</span>
+      <span class="arrow">▾</span>
+    </button>
+    <div class="manual-body" id="manualBody">
+      <p>If automatic fetching is blocked, follow these steps:</p>
+      <ol>
+        <li>Go to <strong>archersdiary.com/MyEvents.aspx</strong></li>
+        <li>Type the archer's name and wait for results to load</li>
+        <li>Press <code>Ctrl+U</code> (or right-click → View Page Source)</li>
+        <li>Select all (<code>Ctrl+A</code>), copy, paste below</li>
+      </ol>
+      <div class="manual-fields">
+        <input type="text" id="manualName" placeholder="Archer name">
+        <textarea id="manualHtml" placeholder="Paste full page source HTML here..."></textarea>
+        <button class="btn btn-primary btn-sm" style="align-self:flex-start" onclick="importManual()">Import scores</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Data sourced from archersdiary.com — Archery Australia</span>
+    <span id="lastUpdated">—</span>
+  </footer>
+
+</div>
+
+<script>
+/**
+ * ── CONFIGURATION ──────────────────────────────────────────────
+ * After deploying worker.js to Cloudflare, paste your worker URL below.
+ * e.g. 'https://archers-proxy.yourname.workers.dev'
+ *
+ * Leave as empty string '' to use manual import only.
+ * ───────────────────────────────────────────────────────────────
+ */
+const WORKER_URL = 'https://archersdiary-proxy.ryantyack.workers.dev';
+
+const AD_URL = 'https://archersdiary.com/MyEvents.aspx';
+const PROXY_URL = WORKER_URL || 'https://corsproxy.io/?url=' + encodeURIComponent(AD_URL);
+
+let archers = [];
+let scores = {};
+
+function loadState() {
+  try {
+    archers = JSON.parse(localStorage.getItem('wa720_archers') || '[]');
+    scores = JSON.parse(localStorage.getItem('wa720_scores') || '{}');
+  } catch(e) {
+    archers = []; scores = {};
+  }
+}
+
+function saveState() {
+  localStorage.setItem('wa720_archers', JSON.stringify(archers));
+  localStorage.setItem('wa720_scores', JSON.stringify(scores));
+}
+
+function setStatus(msg, type = '') {
+  const bar = document.getElementById('statusBar');
+  document.getElementById('statusText').textContent = msg;
+  bar.className = 'status-bar ' + type;
+}
+
+function parseDate(str) {
+  if (!str) return new Date(0);
+  const [d, m, y] = str.split('/');
+  return new Date(+y, +m - 1, +d);
+}
+
+/* ── Fetch ── */
+async function fetchArcher(name) {
+  setStatus('Fetching scores for ' + name + '…', 'loading');
+
+  if (!WORKER_URL) {
+    setStatus('No proxy configured — use manual import below. Set WORKER_URL after deploying worker.js to Cloudflare.', 'error');
+    return false;
+  }
+
+  try {
+    const firstResp = await fetch(WORKER_URL);
+    if (!firstResp.ok) throw new Error('Worker GET failed: ' + firstResp.status);
+    const firstHtml = await firstResp.text();
+
+    const fd = buildFormData(name, firstHtml);
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      body: fd,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    if (!resp.ok) throw new Error('Worker POST failed: ' + resp.status);
+    const html = await resp.text();
+
+    if (!html.includes('GridView1')) {
+      setStatus('No results for "' + name + '" — check spelling matches Archers Diary exactly.', 'error');
+      return false;
+    }
+
+    parseAndStore(name, html);
+    return true;
+  } catch(e) {
+    setStatus('Fetch failed: ' + e.message + ' — use manual import below.', 'error');
+    return false;
+  }
+}
+
+function buildFormData(name, html) {
+  const vs = (html.match(/id="__VIEWSTATE"\s+value="([^"]*)"/) || [])[1] || '';
+  const ev = (html.match(/id="__EVENTVALIDATION"\s+value="([^"]*)"/) || [])[1] || '';
+  const vsg = (html.match(/id="__VIEWSTATEGENERATOR"\s+value="([^"]*)"/) || [])[1] || '';
+  const params = new URLSearchParams({
+    __EVENTTARGET: 'ctl00$mainContent$txtName',
+    __EVENTARGUMENT: '',
+    __VIEWSTATE: vs,
+    __VIEWSTATEGENERATOR: vsg,
+    __EVENTVALIDATION: ev,
+    'ctl00$mainContent$txtName': name,
+    'ctl00$mainContent$ddlDiscipline': '',
+    'ctl00$mainContent$ddlDivision': '',
+    'ctl00$mainContent$ddlRound': '',
+    'ctl00$mainContent$ddlStatus': '0',
+    'ctl00$mainContent$ddlFilter': '0',
+  });
+  return params.toString();
+}
+
+/* ── Parse HTML ── */
+function parseAndStore(name, html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const rows = doc.querySelectorAll('#ctl00_mainContent_GridView1 tbody tr');
+  const results = [];
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 10) return;
+
+    const round = cells[8] ? cells[8].textContent.trim() : '';
+    if (!round.includes('70/720')) return;
+
+    const scoreText = cells[9] ? cells[9].textContent.trim() : '';
+    const score = parseInt(scoreText);
+    if (isNaN(score) || score <= 0) return;
+
+    const link = cells[0] ? (cells[0].querySelector('a')?.getAttribute('href') || '') : '';
+    results.push({
+      eventName: cells[0] ? cells[0].textContent.trim() : '',
+      link,
+      discipline: cells[2] ? cells[2].textContent.trim() : '',
+      date: cells[3] ? cells[3].textContent.trim() : '',
+      division: cells[7] ? cells[7].textContent.trim() : '',
+      round,
+      score,
+      rating: parseFloat(cells[10] ? cells[10].textContent.trim() : '') || null
+    });
+  });
+
+  scores[name] = results;
+  scores[name + '_updated'] = new Date().toISOString();
+  saveState();
+  updateHeaderStats();
+  renderTags();
+  renderTable();
+  setStatus('Loaded ' + results.length + ' WA 70/720 score' + (results.length !== 1 ? 's' : '') + ' for ' + name + '.');
+}
+
+/* ── UI actions ── */
+function addArcher() {
+  const input = document.getElementById('nameInput');
+  const name = input.value.trim();
+  if (!name) return;
+  if (archers.includes(name)) {
+    setStatus(name + ' already in list.', 'error');
+    return;
+  }
+  archers.push(name);
+  saveState();
+  renderTags();
+  input.value = '';
+  fetchArcher(name);
+}
+
+function removeArcher(name) {
+  archers = archers.filter(a => a !== name);
+  delete scores[name];
+  delete scores[name + '_updated'];
+  saveState();
+  renderTags();
+  updateHeaderStats();
+  renderTable();
+  setStatus('Removed ' + name + '.');
+}
+
+async function refreshAll() {
+  if (!archers.length) return;
+  for (const name of archers) {
+    await fetchArcher(name);
+    await new Promise(r => setTimeout(r, 600));
+  }
+  setStatus('All scores refreshed.');
+}
+
+function clearAll() {
+  if (!confirm('Remove all archers and scores?')) return;
+  archers = []; scores = {};
+  saveState();
+  renderTags();
+  updateHeaderStats();
+  renderTable();
+  setStatus('Cleared.');
+}
+
+function importManual() {
+  const name = document.getElementById('manualName').value.trim();
+  const html = document.getElementById('manualHtml').value.trim();
+  if (!name || !html) { setStatus('Enter a name and paste the page source.', 'error'); return; }
+  if (!archers.includes(name)) { archers.push(name); saveState(); }
+  parseAndStore(name, html);
+  document.getElementById('manualHtml').value = '';
+  setStatus('Imported scores for ' + name + '.');
+}
+
+function toggleManual(btn) {
+  btn.classList.toggle('open');
+  document.getElementById('manualBody').classList.toggle('open');
+}
+
+/* ── Render ── */
+function renderTags() {
+  const el = document.getElementById('archerTags');
+  el.innerHTML = archers.map(name => {
+    const count = (scores[name] || []).length;
+    return `<div class="tag">
+      <span>${name}</span>
+      ${count ? `<span class="count">${count}</span>` : ''}
+      <button class="tag-remove" onclick="removeArcher('${name.replace(/'/g, "\\'")}')" title="Remove">&times;</button>
+    </div>`;
+  }).join('');
+}
+
+let sortCol = 'score';
+let sortDir = -1;
+
+function renderTable() {
+  const viewMode = document.getElementById('viewMode').value;
+  const divFilter = document.getElementById('divFilter').value;
+  const container = document.getElementById('tableContainer');
+
+  if (!archers.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🏹</div><h3>No archers yet</h3><p>Add archers by name to build your club rankings.</p></div>`;
+    return;
+  }
+
+  const now = new Date();
+  const cutoff = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+
+  if (viewMode === 'all') {
+    let rows = [];
+    archers.forEach(name => {
+      let pool = scores[name] || [];
+      if (divFilter) pool = pool.filter(s => s.division === divFilter);
+      pool.forEach(s => rows.push({ name, ...s }));
+    });
+    rows.sort((a, b) => b.score - a.score);
+    const maxScore = rows[0]?.score || 720;
+    container.innerHTML = buildTable(rows, maxScore, true);
+  } else {
+    let rows = archers.map(name => {
+      let pool = scores[name] || [];
+      if (divFilter) pool = pool.filter(s => s.division === divFilter);
+      if (viewMode === 'recent') pool = pool.filter(s => parseDate(s.date) >= cutoff);
+      if (!pool.length) return { name, score: null };
+      const best = pool.reduce((a, b) => b.score > a.score ? b : a);
+      return { name, ...best };
+    });
+
+    rows.sort((a, b) => {
+      if (a.score === null && b.score === null) return 0;
+      if (a.score === null) return 1;
+      if (b.score === null) return -1;
+      if (sortCol === 'score') return sortDir * (b.score - a.score);
+      if (sortCol === 'rating') return sortDir * ((b.rating || 0) - (a.rating || 0));
+      if (sortCol === 'name') return sortDir * a.name.localeCompare(b.name);
+      if (sortCol === 'date') return sortDir * (parseDate(b.date) - parseDate(a.date));
+      return 0;
+    });
+
+    const maxScore = rows.find(r => r.score)?.score || 720;
+    container.innerHTML = buildTable(rows, maxScore, false);
+  }
+
+  updateHeaderStats();
+  updateLastUpdated();
+}
+
+function buildTable(rows, maxScore, showName) {
+  if (!rows.length) return `<div class="empty"><div class="empty-icon">🎯</div><h3>No scores found</h3><p>Try a different filter or add more archers.</p></div>`;
+
+  function th(label, col) {
+    const active = sortCol === col ? 'sorted' : '';
+    const arrow = sortCol === col ? (sortDir === -1 ? ' ▼' : ' ▲') : '';
+    return `<th class="sortable ${active}" onclick="setSort('${col}')">${label}${arrow}</th>`;
+  }
+
+  let html = `<table>
+    <thead><tr>
+      <th class="rank-cell"></th>
+      ${showName ? '<th>Archer</th>' : th('Archer', 'name')}
+      ${th('Score', 'score')}
+      ${th('Rating', 'rating')}
+      <th>Division</th>
+      <th>Event</th>
+      ${th('Date', 'date')}
+    </tr></thead>
+    <tbody>`;
+
+  rows.forEach((r, i) => {
+    const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+    const barWidth = r.score ? Math.round((r.score / maxScore) * 80) : 0;
+    const link = r.link
+      ? `<a href="https://archersdiary.com/${r.link}" target="_blank" rel="noopener">${r.eventName || '—'}</a>`
+      : (r.eventName || '—');
+
+    html += `<tr>
+      <td class="rank-cell"><span class="rank-badge ${rankClass}">${i + 1}</span></td>
+      <td class="archer-name">${r.name}</td>
+      <td>
+        ${r.score !== null
+          ? `<div class="score-bar-wrap"><span class="score-val">${r.score}</span><div class="score-bar" style="width:${barWidth}px"></div></div>`
+          : `<span style="color:var(--text-3);font-size:13px">no data</span>`}
+      </td>
+      <td><span class="rating-val">${r.rating != null ? r.rating.toFixed(1) : '—'}</span></td>
+      <td><span class="div-badge">${r.division || '—'}</span></td>
+      <td><div class="event-name">${link}</div></td>
+      <td><span class="date-val">${r.date || '—'}</span></td>
+    </tr>`;
+  });
+
+  return html + '</tbody></table>';
+}
+
+function setSort(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = -1; }
+  renderTable();
+}
+
+function updateHeaderStats() {
+  const allScores = archers.flatMap(n => scores[n] || []);
+  document.getElementById('hArchers').textContent = archers.length;
+  document.getElementById('hScores').textContent = allScores.length;
+  const top = allScores.reduce((best, s) => s.score > best ? s.score : best, 0);
+  document.getElementById('hTop').textContent = top || '—';
+}
+
+function updateLastUpdated() {
+  const times = archers.map(n => scores[n + '_updated']).filter(Boolean);
+  if (!times.length) { document.getElementById('lastUpdated').textContent = '—'; return; }
+  const latest = new Date(Math.max(...times.map(t => new Date(t))));
+  document.getElementById('lastUpdated').textContent = 'Updated ' + latest.toLocaleString();
+}
+
+function exportCSV() {
+  const viewMode = document.getElementById('viewMode').value;
+  const divFilter = document.getElementById('divFilter').value;
+  const cutoff = new Date(new Date().getFullYear() - 1, new Date().getMonth(), new Date().getDate());
+  let rows = [];
+
+  archers.forEach(name => {
+    let pool = scores[name] || [];
+    if (divFilter) pool = pool.filter(s => s.division === divFilter);
+    if (viewMode === 'recent') pool = pool.filter(s => parseDate(s.date) >= cutoff);
+    if (viewMode === 'all') {
+      pool.forEach(s => rows.push({ name, ...s }));
+    } else {
+      if (pool.length) rows.push({ name, ...pool.reduce((a, b) => b.score > a.score ? b : a) });
+    }
+  });
+
+  rows.sort((a, b) => (b.score || 0) - (a.score || 0));
+  const headers = ['Rank', 'Name', 'Score', 'Rating', 'Division', 'Round', 'Event', 'Date'];
+  const csv = [headers.join(','), ...rows.map((r, i) =>
+    [i + 1, `"${r.name}"`, r.score || '', r.rating?.toFixed(1) || '', r.division || '', `"${r.round || ''}"`, `"${r.eventName || ''}"`, r.date || ''].join(',')
+  )].join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'wa720-rankings.csv';
+  a.click();
+}
+
+/* ── Init ── */
+document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') addArcher(); });
+
+loadState();
+renderTags();
+renderTable();
+updateHeaderStats();
+updateLastUpdated();
+</script>
+</body>
+          </html>
