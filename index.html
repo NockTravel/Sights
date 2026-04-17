@@ -17,26 +17,32 @@
     --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
   }
   body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
-  header { border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
-  h1 { font-family: var(--mono); font-size: 18px; font-weight: 500; letter-spacing: -0.02em; }
+  header { border-bottom: 1px solid var(--border); padding: 0.9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .header-left { display: flex; align-items: center; gap: 1.5rem; }
+  h1 { font-family: var(--mono); font-size: 17px; font-weight: 500; letter-spacing: -0.02em; }
+  nav { display: flex; gap: 4px; }
+  .nav-link { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; padding: 5px 10px; border-radius: 4px; text-decoration: none; color: var(--muted); border: 1px solid transparent; transition: all 0.15s; cursor: pointer; }
+  .nav-link.active { color: var(--accent); border-color: var(--border2); background: var(--surface); }
+  .nav-link:hover:not(.active) { color: var(--text); border-color: var(--border); }
   .header-right { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
-  .app { display: grid; grid-template-columns: 310px 1fr 210px; min-height: calc(100vh - 52px); }
+  .app { display: grid; grid-template-columns: 310px 1fr 240px; min-height: calc(100vh - 52px); }
   .sidebar { border-right: 1px solid var(--border); padding: 1rem; overflow-y: auto; }
-  .output { padding: 1rem; overflow-y: auto; border-right: 1px solid var(--border); }
+  .output  { padding: 1rem; overflow-y: auto; border-right: 1px solid var(--border); }
   .tape-col { padding: 1rem; background: var(--surface); overflow-y: auto; }
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.75rem; overflow: hidden; }
   .ph { background: var(--surface2); padding: 6px 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
   .pb { padding: 10px 12px; }
-  .fr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .fr3 { grid-template-columns: 1fr 1fr 1fr; }
+  .fr  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .fr3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
   .field { display: flex; flex-direction: column; gap: 3px; }
   label { font-size: 10px; color: var(--muted); font-family: var(--mono); }
   input[type="number"], select { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 12px; padding: 6px 8px; width: 100%; outline: none; -moz-appearance: textfield; }
   input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
   input:focus, select:focus { border-color: var(--accent); }
-  .btn-calc { width: 100%; background: var(--accent); color: #0f0f0f; border: none; border-radius: 4px; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px; cursor: pointer; margin-top: 4px; }
+  select:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-calc { width: 100%; background: var(--accent); color: #0f0f0f; border: none; border-radius: 4px; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px; cursor: pointer; margin-top: 4px; transition: background 0.15s; }
   .btn-calc:hover { background: var(--accent2); }
-  .bsm { background: transparent; border: 1px solid var(--border2); border-radius: 4px; color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; padding: 5px 9px; cursor: pointer; white-space: nowrap; }
+  .bsm { background: transparent; border: 1px solid var(--border2); border-radius: 4px; color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; padding: 5px 9px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
   .bsm:hover { border-color: var(--accent); color: var(--accent); }
   .err { font-family: var(--mono); font-size: 10px; color: var(--danger); min-height: 14px; margin-top: 6px; }
   .mg { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 1rem; }
@@ -56,22 +62,24 @@
   td { padding: 4px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: rgba(255,255,255,0.02); }
-  tr.peak td { background: #1a1000; color: var(--peak); }
+  tr.peak  td { background: #1a1000; color: var(--peak); }
   tr.calib td { background: #0a1520; color: #78b0e0; }
   .cp { color: #5a9a5a; } .cn { color: var(--danger); }
-  .empty { text-align: center; padding: 2.5rem 1rem; color: var(--dim); font-family: var(--mono); font-size: 11px; line-height: 2.2; }
+  .empty { text-align: center; padding: 2.5rem 1rem; color: var(--dim); font-family: var(--mono); font-size: 11px; line-height: 2.4; }
   .tape-hd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
   .tape-opts { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
   .tape-opts label { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); font-family: var(--mono); cursor: pointer; }
   .tape-opts input[type="checkbox"] { accent-color: var(--accent); }
   .tape-opts select { width: auto; font-size: 11px; padding: 3px 6px; }
-  .tape-acts { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .opt-row { display: flex; align-items: center; gap: 8px; }
+  .opt-row label { min-width: 60px; }
+  .tape-acts { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
   #tapePreview svg { border: 1px solid var(--border); background: #fff; border-radius: 3px; max-width: 100%; }
   .legend { display: flex; gap: 14px; margin-top: 10px; font-family: var(--mono); font-size: 10px; color: var(--dim); flex-wrap: wrap; }
   .li { display: flex; align-items: center; gap: 5px; }
   .ld { width: 8px; height: 8px; border-radius: 2px; }
-  @media (max-width: 1000px) { .app { grid-template-columns: 300px 1fr; } .tape-col { display: none; } }
-  @media (max-width: 680px) { .app { grid-template-columns: 1fr; } .sidebar { border-right: none; border-bottom: 1px solid var(--border); } .mg { grid-template-columns: repeat(2,1fr); } }
+  @media (max-width: 1050px) { .app { grid-template-columns: 300px 1fr; } .tape-col { display: none; } }
+  @media (max-width: 680px)  { .app { grid-template-columns: 1fr; } .sidebar { border-right: none; border-bottom: 1px solid var(--border); } .mg { grid-template-columns: repeat(2,1fr); } }
   @media print {
     body, .app { display: block; background: white; }
     .sidebar, .output, header { display: none !important; }
@@ -85,7 +93,13 @@
 <body>
 
 <header>
-  <h1>SightCalc</h1>
+  <div class="header-left">
+    <h1>SightCalc</h1>
+    <nav>
+      <span class="nav-link active">Standard</span>
+      <a class="nav-link" href="youth.html">Youth</a>
+    </nav>
+  </div>
   <div class="header-right">sight setting calculator</div>
 </header>
 
@@ -105,10 +119,10 @@
     <div class="panel">
       <div class="ph">Arrow</div>
       <div class="pb">
-        <div class="fr fr3">
-          <div class="field"><label>Length (mm)</label><input type="number" id="arrowLen" value="700" step="10"></div>
+        <div class="fr3">
+          <div class="field"><label>Length (mm)</label><input type="number" id="arrowLen" value="700" step="10" min="500"></div>
           <div class="field"><label>Diam (mm)</label><input type="number" id="arrowDiam" value="5" step="1"></div>
-          <div class="field"><label>Mass (gr)</label><input type="number" id="arrowMass" value="380" step="10"></div>
+          <div class="field"><label>Mass (gr)</label><input type="number" id="arrowMass" value="380" step="10" min="100"></div>
         </div>
       </div>
     </div>
@@ -128,7 +142,7 @@
           <div class="field"><label>Threads/inch</label><input type="number" id="tpi" value="24" step="1"></div>
           <div class="field"><label>Max dist (m)</label><input type="number" id="maxDist" value="90" step="10"></div>
         </div>
-        <p style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:8px">Settings in tenths of turns &mdash; 136 = 13.6 turns</p>
+        <p style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:8px">Settings in tenths of turns — 136 = 13.6 turns</p>
         <button class="btn-calc" onclick="calculate()">Calculate &rarr;</button>
         <div class="err" id="err"></div>
       </div>
@@ -145,13 +159,13 @@
   </aside>
 
   <section class="output">
-    <div id="emptyState" class="empty">Enter settings and click Calculate.<br>Sight tape appears on the right.</div>
+    <div id="emptyState" class="empty">Enter your settings and click Calculate.<br>Sight tape preview appears on the right.</div>
     <div id="results" style="display:none">
       <div class="mg" id="metrics"></div>
       <div class="tn" id="tnote"></div>
       <div class="tw">
         <div class="ttb">
-          <span class="tt">Settings &mdash; flat ground</span>
+          <span class="tt">Settings — flat ground</span>
           <div class="ta">
             <button class="bsm" onclick="exportCSV()">CSV</button>
             <button class="bsm" onclick="exportTXT()">TXT</button>
@@ -173,19 +187,40 @@
 
   <aside class="tape-col">
     <div class="tape-hd">Sight tape</div>
+
     <div class="tape-opts">
-      <label><input type="checkbox" id="optShort"> Show 2&ndash;9 m marks</label>
-      <label>Labels:
+      <div class="opt-row">
+        <label>Interval</label>
+        <select id="optInterval" onchange="onIntervalChange()">
+          <option value="1">1 m</option>
+          <option value="5">5 m</option>
+          <option value="10">10 m</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <label>Style</label>
+        <select id="optStyle" onchange="renderTape()">
+          <option value="normal">Normal</option>
+          <option value="basic">Basic</option>
+          <option value="caveman">Caveman</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <label>Labels</label>
         <select id="optSide" onchange="renderTape()">
           <option value="right">Right</option>
           <option value="left">Left</option>
         </select>
-      </label>
+      </div>
+      <label><input type="checkbox" id="optShort" onchange="renderTape()"> Show 2–9 m marks</label>
+      <label><input type="checkbox" id="opt18" onchange="renderTape()" checked> Always include 18 m</label>
     </div>
+
     <div class="tape-acts">
       <button class="bsm" onclick="printTape()">Print</button>
       <button class="bsm" onclick="dlSVG()">SVG</button>
     </div>
+
     <div id="tapeEmpty" style="font-family:var(--mono);font-size:10px;color:var(--dim);text-align:center;padding:1.5rem 0">Calculate first</div>
     <div id="tapePreview"></div>
   </aside>
@@ -193,6 +228,18 @@
 
 <script>
 let R = null;
+
+function onIntervalChange() {
+  const iv = parseInt(document.getElementById('optInterval').value);
+  const styleEl = document.getElementById('optStyle');
+  if (iv === 1) {
+    if (styleEl.value === 'basic') styleEl.value = 'normal';
+    Array.from(styleEl.options).forEach(o => { o.disabled = (o.value === 'basic'); });
+  } else {
+    Array.from(styleEl.options).forEach(o => { o.disabled = false; });
+  }
+  renderTape();
+}
 
 function trajectory(td, v0, la, sl, dr, am) {
   const dt = 0.002;
@@ -207,13 +254,13 @@ function trajectory(td, v0, la, sl, dr, am) {
   return y-(x-td)*a;
 }
 
-function calcDrag(v,L,d,m){
+function calcDrag(v, L, d, m) {
   const rho=1.204, Lm=L/1000, dm=d/1000, A=Math.PI*dm*Lm, Re=v*Lm/1.52e-5;
   return .5*rho*v*v*A*(0.0576/Math.pow(Re,.2)+0.0016*Lm/dm/Math.pow(Re,.4))*10/7;
 }
 
-function findAngle(dist,v0,drag,am,tol){
-  tol=tol||.001; let a=0,s=1;
+function findAngle(dist, v0, drag, am, tol) {
+  tol=tol||.001; let a=0, s=1;
   let dp=trajectory(dist,v0,a*Math.PI/180,0,drag,am);
   while(dp<=0){a+=s;dp=trajectory(dist,v0,a*Math.PI/180,0,drag,am);}
   let i=0;
@@ -226,19 +273,19 @@ function findAngle(dist,v0,drag,am,tol){
   return a;
 }
 
-function calcGap(v0,es,ea,d1,d2,dr,am){
+function calcGap(v0, es, ea, d1, d2, dr, am) {
   const e1=findAngle(d1,v0,dr,am,.001), e2=findAngle(d2,v0,dr,am,.005);
   return(es*(Math.tan(e2*Math.PI/180)-Math.tan(e1*Math.PI/180))-ea*es*(d2-d1)/d1/d2)*1000;
 }
 
-function sMM(dist,v0,es,ea,dr,am){
+function sMM(dist, v0, es, ea, dr, am) {
   const a=findAngle(dist,v0,dr,am,.001);
   return((ea*(dist-es)/dist)-es*Math.tan(a*Math.PI/180))*1000;
 }
 
 function gi(id){return parseFloat(document.getElementById(id).value);}
 
-function calculate(){
+function calculate() {
   const es=gi('eyeSight')/1000, ea=gi('eyeArrow')/1000;
   const aL=gi('arrowLen'), aD=gi('arrowDiam'), aG=gi('arrowMass');
   const d1=gi('dist1'), d2=gi('dist2'), s1=gi('set1'), s2=gi('set2');
@@ -246,12 +293,12 @@ function calculate(){
   const errEl=document.getElementById('err');
   errEl.textContent='';
   if([es,ea,aL,aD,aG,d1,d2,s1,s2,tpi,mxD].some(isNaN)){errEl.textContent='Fill in all fields.';return;}
-  if(d1>=d2){errEl.textContent='Short dist < long dist required.';return;}
+  if(d1>=d2){errEl.textContent='Short dist must be less than long dist.';return;}
 
   const am=aG/15.432359/1000;
   const sgMM=Math.abs(s2-s1)/10/tpi*25.4;
 
-  let v0=30,step=10, dr=calcDrag(v0,aL,aD,am);
+  let v0=30, step=10, dr=calcDrag(v0,aL,aD,am);
   let cg=calcGap(v0,es,ea,d1,d2,dr,am);
   while(cg>sgMM){v0+=step;dr=calcDrag(v0,aL,aD,am);cg=calcGap(v0,es,ea,d1,d2,dr,am);}
   let it=0;
@@ -271,84 +318,153 @@ function calculate(){
   const sc=(s2-s1)/(smm[d2]-smm[d1]), of=s1-sc*smm[d1];
   const toT=mm=>sc*mm+of, toTurns=t=>(t/10).toFixed(1);
 
-  R={smm,toT,toTurns,pkD,es,ea,d1,d2,s1,s2,tpi,mxD,v0,sgMM};
+  R={smm,toT,toTurns,pkD,d1,d2,tpi,mxD,v0,sgMM};
 
   document.getElementById('metrics').innerHTML=`
-    <div class="metric"><div class="ml">Arrow speed</div><div class="mv">${v0.toFixed(1)}</div><div class="mu">m/s &mdash; ${(v0*1000/25.4/12).toFixed(0)} ft/s</div></div>
+    <div class="metric"><div class="ml">Arrow speed</div><div class="mv">${v0.toFixed(1)}</div><div class="mu">m/s — ${(v0*1000/25.4/12).toFixed(0)} ft/s</div></div>
     <div class="metric"><div class="ml">Turnover</div><div class="mv">${pkD}</div><div class="mu">metres</div></div>
     <div class="metric"><div class="ml">Sight gap</div><div class="mv">${sgMM.toFixed(1)}</div><div class="mu">mm</div></div>
     <div class="metric"><div class="ml">mm / turn</div><div class="mv">${(25.4/tpi).toFixed(3)}</div><div class="mu">${tpi} tpi</div></div>`;
-
-  document.getElementById('tnote').textContent=`\u25b2 Turnover at ${pkD} m \u2014 highest sight position. Settings decrease for distances closer than this.`;
+  document.getElementById('tnote').textContent=`▲ Turnover at ${pkD} m — highest sight position. Settings decrease for distances closer than this.`;
 
   const tb=document.getElementById('tbody'); tb.innerHTML=''; let pT=null;
   for(let d=1;d<=mxD;d++){
     const t=toT(smm[d]), ch=pT!==null?(t-pT)/10:null;
-    const cs=ch===null?'':ch>0?'cp':'cn';
+    const chStr=ch!==null?(ch>=0?'+':'')+ch.toFixed(2):'—';
+    const chCls=ch===null?'':ch>0?'cp':'cn';
     const tr=document.createElement('tr');
     if(d===pkD)tr.className='peak'; else if(d===d1||d===d2)tr.className='calib';
-    tr.innerHTML=`<td>${d} m${d===pkD?' &#9650;':''}</td><td>${toTurns(t)}</td><td class="${cs}">${ch!==null?(ch>=0?'+':'')+ch.toFixed(2):'&mdash;'}</td><td>${smm[d].toFixed(1)}</td>`;
+    tr.innerHTML=`<td>${d} m${d===pkD?' ▲':''}</td><td>${toTurns(t)}</td><td class="${chCls}">${chStr}</td><td>${smm[d].toFixed(1)}</td>`;
     tb.appendChild(tr); pT=t;
   }
 
   document.getElementById('emptyState').style.display='none';
   document.getElementById('results').style.display='block';
   document.getElementById('tapeEmpty').style.display='none';
-  document.getElementById('optShort').onchange=renderTape;
   renderTape();
 }
 
-function buildSVG(){
-  if(!R)return null;
-  const{smm,toT,toTurns,pkD,d1,d2,tpi,mxD}=R;
-  const right=document.getElementById('optSide').value==='right';
-  const showShort=document.getElementById('optShort').checked;
+function getDistances() {
+  if(!R) return [];
+  const{smm,pkD,mxD}=R;
+  const iv    = parseInt(document.getElementById('optInterval').value);
+  const show18= document.getElementById('opt18').checked;
+  const showShort = document.getElementById('optShort').checked;
+  const dists = new Set();
+
+  if(iv===1){
+    for(let d=pkD;d<=mxD;d++) if(smm[d]!==undefined) dists.add(d);
+  } else {
+    for(let d=iv;d<=mxD;d+=iv) if(smm[d]!==undefined) dists.add(d);
+  }
+  if(show18 && smm[18]!==undefined) dists.add(18);
+  if(showShort && iv!==1){
+    for(let d=2;d<=9;d++) if(smm[d]!==undefined) dists.add(d);
+  } else if(iv===1 && showShort){
+    for(let d=2;d<=9;d++) if(smm[d]!==undefined) dists.add(d);
+  }
+  return Array.from(dists).sort((a,b)=>a-b);
+}
+
+function buildSVG() {
+  if(!R) return null;
+  const{smm,pkD,mxD}=R;
+  const right   = document.getElementById('optSide').value==='right';
+  const style   = document.getElementById('optStyle').value;
+  const show18  = document.getElementById('opt18').checked;
+  const iv      = parseInt(document.getElementById('optInterval').value);
+  const dists   = getDistances();
+  if(!dists.length) return null;
+
   const PPM=3.7795;
-  const WMM=28, padTop=16, padBot=22;
-  const pkMM=smm[pkD], endMM=smm[mxD];
-  const HMM=(pkMM-endMM)+padTop+padBot;
+  const WMM=38, padTop=16, padBot=30;
+  const pkMM=smm[pkD];
+  const lowestMM = smm[mxD];
+  const HMM=(pkMM-lowestMM)+padTop+padBot;
   const W=WMM*PPM, H=HMM*PPM;
   const yOf=d=>(padTop+(pkMM-smm[d]))*PPM;
-  const spX=(right?10:18)*PPM;
-  const tL=(right?5:-5)*PPM, tM=(right?3:-3)*PPM, tS=(right?1.5:-1.5)*PPM;
-  const lbX=(right?spX+6*PPM:spX-6*PPM), anc=right?'start':'end';
+
+  const spX=(right?12:26)*PPM;
+  const tL=(right?5:-5)*PPM, tM=(right?3.5:-3.5)*PPM, tS=(right?2:-2)*PPM;
+  const lbX=(right?spX+6.5*PPM:spX-6.5*PPM), anc=right?'start':'end';
   const topY=padTop*PPM, botY=(HMM-padBot)*PPM;
+
+  const calMidX=(right? W-5.5*PPM : 5.5*PPM);
+  const calTopY=H-(padBot-4)*PPM;
+  const calBotY=calTopY+50*PPM;
+  const calMidY=(calTopY+calBotY)/2;
+
+  const MAIN_COL='#c00', COL18='#b06020';
+  const MAIN_FS=3.2*PPM, FS18=2.6*PPM;
 
   let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${W.toFixed(1)}" height="${H.toFixed(1)}" viewBox="0 0 ${W.toFixed(1)} ${H.toFixed(1)}">`;
   s+=`<rect width="${W}" height="${H}" fill="white"/>`;
-  s+=`<text x="${W/2}" y="${12*PPM}" text-anchor="middle" font-size="${3.5*PPM}" font-family="'IBM Plex Mono',monospace" fill="#333">Metres</text>`;
-  s+=`<line x1="${spX}" y1="${topY}" x2="${spX}" y2="${botY}" stroke="#222" stroke-width="0.8"/>`;
-  s+=`<line x1="${spX}" y1="${topY}" x2="${spX+tL}" y2="${topY}" stroke="#c00" stroke-width="0.8"/>`;
+  s+=`<text x="${spX}" y="${11*PPM}" text-anchor="middle" font-size="${3.3*PPM}" font-family="'IBM Plex Mono',monospace" fill="#333">Metres</text>`;
 
-  for(let d=10;d<=mxD;d+=10){
-    if(!smm[d])continue;
-    const y=yOf(d);
-    s+=`<line x1="${spX}" y1="${y}" x2="${spX+tL}" y2="${y}" stroke="#c00" stroke-width="0.8"/>`;
-    s+=`<text x="${lbX}" y="${y+1.2*PPM}" text-anchor="${anc}" font-size="${3.2*PPM}" font-family="'IBM Plex Mono',monospace" fill="#222">${d/10}</text>`;
+  if(style==='normal'||style==='basic'){
+    s+=`<line x1="${spX}" y1="${topY}" x2="${spX}" y2="${botY}" stroke="#333" stroke-width="0.7"/>`;
   }
-  for(let d=15;d<=mxD;d+=10){
-    if(!smm[d])continue;
+
+  dists.forEach(d=>{
+    if(!smm[d]) return;
     const y=yOf(d);
-    s+=`<line x1="${spX}" y1="${y}" x2="${spX+tM}" y2="${y}" stroke="#c00" stroke-width="0.6"/>`;
-  }
-  for(let d=pkD;d<=mxD;d++){
-    if(!smm[d])continue; if(d%10===0||d%5===0)continue;
-    const y=yOf(d);
-    s+=`<line x1="${spX}" y1="${y}" x2="${spX+tS}" y2="${y}" stroke="#c00" stroke-width="0.4"/>`;
-  }
-  if(showShort){
-    for(let d=2;d<=9;d++){
-      if(!smm[d])continue;
-      const y=yOf(d), ox=(right?tM+PPM:tM-PPM);
-      s+=`<line x1="${spX}" y1="${y}" x2="${spX+tM}" y2="${y}" stroke="#888" stroke-width="0.5"/>`;
-      s+=`<text x="${spX+ox}" y="${y+PPM}" text-anchor="${anc}" font-size="${2.5*PPM}" font-family="'IBM Plex Mono',monospace" fill="#555">${d}</text>`;
+    const is18=show18&&d===18;
+    const isShort=d<10;
+    const col=is18?COL18:MAIN_COL;
+    const fs=is18?FS18:MAIN_FS;
+
+    if(style==='normal'||style==='basic'){
+      let tk=tL;
+      if(isShort) tk=tM;
+      else if(iv===1 && d%10!==0 && d%5!==0) tk=tS;
+      else if(iv===1 && d%5!==0 && d%10!==0) tk=tS;
+
+      if(style==='normal' && iv===1){
+        if(d%10===0)      tk=tL;
+        else if(d%5===0)  tk=tM;
+        else              tk=tS;
+      }
+      if(style==='basic'){
+        if(is18||isShort) tk=tM;
+        else tk=tL;
+      }
+
+      s+=`<line x1="${spX}" y1="${y}" x2="${spX+tk}" y2="${y}" stroke="${col}" stroke-width="${is18?'0.6':'0.8'}"/>`;
+
+      const showLabel = style==='normal'
+        ? (d%10===0)
+        : true;
+
+      if(showLabel && !isShort){
+        s+=`<text x="${lbX}" y="${y+1.2*PPM}" text-anchor="${anc}" font-size="${fs}" font-family="'IBM Plex Mono',monospace" fill="${col}">${d/10}</text>`;
+      }
+      if(isShort){
+        const ox=right?tM+PPM:tM-PPM;
+        s+=`<text x="${spX+ox}" y="${y+PPM}" text-anchor="${anc}" font-size="${2.3*PPM}" font-family="'IBM Plex Mono',monospace" fill="#888">${d}</text>`;
+      }
     }
+
+    if(style==='caveman'){
+      const label=isShort?String(d):String(d);
+      const cx=lbX, fs2=is18?FS18:MAIN_FS;
+      s+=`<text x="${cx}" y="${y+fs2/2}" text-anchor="${anc}" font-size="${fs2}" font-family="'IBM Plex Mono',monospace" font-weight="500" fill="${col}">${label}</text>`;
+    }
+  });
+
+  if(style==='normal' && iv===1){
+    dists.filter(d=>d>=pkD&&d%10!==0&&d%5!==0&&d>=10).forEach(d=>{
+      if(!smm[d])return;
+      const y=yOf(d);
+      s+=`<line x1="${spX}" y1="${y}" x2="${spX+tS}" y2="${y}" stroke="${MAIN_COL}" stroke-width="0.35"/>`;
+    });
   }
-  const cry=H-12*PPM, cx=3*PPM, c50=50*PPM;
-  s+=`<line x1="${cx}" y1="${cry}" x2="${cx+c50}" y2="${cry}" stroke="#aaa" stroke-width="0.5"/>`;
-  s+=`<line x1="${cx}" y1="${cry-1.5*PPM}" x2="${cx}" y2="${cry+1.5*PPM}" stroke="#aaa" stroke-width="0.5"/>`;
-  s+=`<line x1="${cx+c50}" y1="${cry-1.5*PPM}" x2="${cx+c50}" y2="${cry+1.5*PPM}" stroke="#aaa" stroke-width="0.5"/>`;
-  s+=`<text x="${cx+c50/2}" y="${cry+4*PPM}" text-anchor="middle" font-size="${2.5*PPM}" font-family="'IBM Plex Mono',monospace" fill="#aaa">50 mm cal.</text>`;
+
+  s+=`<line x1="${calMidX}" y1="${calTopY}" x2="${calMidX}" y2="${calBotY}" stroke="#ccc" stroke-width="0.6"/>`;
+  s+=`<line x1="${calMidX-1.5*PPM}" y1="${calTopY}" x2="${calMidX+1.5*PPM}" y2="${calTopY}" stroke="#ccc" stroke-width="0.6"/>`;
+  s+=`<line x1="${calMidX-1.5*PPM}" y1="${calBotY}" x2="${calMidX+1.5*PPM}" y2="${calBotY}" stroke="#ccc" stroke-width="0.6"/>`;
+  s+=`<text x="${calMidX+2.5*PPM}" y="${calMidY+PPM}" text-anchor="start" font-size="${2.2*PPM}" font-family="'IBM Plex Mono',monospace" fill="#ccc">50</text>`;
+  s+=`<text x="${calMidX+2.5*PPM}" y="${calMidY+3.4*PPM}" text-anchor="start" font-size="${2.2*PPM}" font-family="'IBM Plex Mono',monospace" fill="#ccc">mm</text>`;
+
   s+=`</svg>`;
   return s;
 }
@@ -356,7 +472,7 @@ function buildSVG(){
 function renderTape(){const s=buildSVG();if(!s)return;document.getElementById('tapePreview').innerHTML=s;}
 
 function printTape(){
-  const s=buildSVG(); if(!s)return;
+  const s=buildSVG();if(!s)return;
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>SightCalc tape</title>
     <style>body{margin:0;padding:0;background:white;}svg{display:block;}@page{margin:5mm;size:A4 portrait;}</style>
