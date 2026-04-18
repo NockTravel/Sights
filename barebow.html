@@ -72,6 +72,15 @@
   .tape-opts { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
   .tape-opts label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); font-family: var(--mono); cursor: pointer; }
   .tape-opts input[type="checkbox"] { accent-color: var(--accent); }
+
+  .switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch-track { position: absolute; inset: 0; background: var(--border2); border-radius: 20px; transition: background 0.2s; cursor: pointer; }
+  .switch-track::after { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #888; border-radius: 50%; transition: transform 0.2s, background 0.2s; }
+  .switch input:checked + .switch-track { background: var(--accent); }
+  .switch input:checked + .switch-track::after { transform: translateX(16px); background: #fff; }
+  .switch-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--muted); user-select: none; }
+
   .tape-opts select { width: auto; font-size: 12px; padding: 4px 7px; }
   .opt-row { display: flex; align-items: center; gap: 8px; }
   .opt-row label { min-width: 60px; font-size: 12px; }
@@ -152,15 +161,19 @@
           <div class="field"><label>Short dist (m)</label><input type="number" id="dist1" value="10" step="1" min="5"></div>
           <div class="field"><label>Crawl at dist (mm)</label><input type="number" id="crawl1" value="45" step="0.5"></div>
         </div>
+        <div class="fr" style="align-items:start;opacity:0.35;pointer-events:none" id="midRow">
+          <div class="field"><label>Mid dist (m)</label><input type="number" id="dist3" value="20" step="1" min="5" disabled></div>
+          <div class="field"><label>Mid crawl (mm)</label><input type="number" id="crawl3" value="" step="0.5" disabled placeholder="—"></div>
+        </div>
         <div class="info-note" style="margin-bottom:8px">
           <span class="info-icon">&#9432;</span>
           <span class="info-text">Enter a known crawl measurement at a short distance to calibrate the model. Crawl is measured from the nocking point down to the top of the index finger.</span>
         </div>
         <div class="fr">
         </div>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:8px">
-          <input type="checkbox" id="useThreePoint" style="accent-color:var(--accent)" onchange="document.getElementById('threePointPanel').style.display=this.checked?'block':'none'">
-          Use three-point calibration
+        <label class="switch-label" style="margin-bottom:8px">
+          <span class="switch"><input type="checkbox" id="useThreePoint" onchange="onThreePointChange()"><span class="switch-track"></span></span>
+          Three-point calibration
         </label>
         <button class="btn-calc" onclick="calculate()">Calculate &rarr;</button>
         <div class="err" id="err"></div>
@@ -168,16 +181,7 @@
     </div>
 
 
-    <div class="panel" id="threePointPanel" style="display:none">
-      <div class="ph">Third calibration point</div>
-      <div class="pb">
-        <div class="fr" style="align-items:start">
-          <div class="field"><label>Third dist (m)</label><input type="number" id="dist3" value="20" step="1" min="5"></div>
-          <div class="field"><label>Crawl at dist (mm)</label><input type="number" id="crawl3" value="20" step="0.5"></div>
-        </div>
-        <p style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:2px">Third crawl measurement improves accuracy at distances beyond calibration range.</p>
-      </div>
-    </div>
+
     <div class="panel">
       <div class="ph">Profiles</div>
       <div class="pb">
