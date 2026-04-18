@@ -156,10 +156,22 @@
           <span class="info-text">Enter a known crawl measurement at a short distance to calibrate the model. Crawl is measured from the nocking point down to the top of the index finger.</span>
         </div>
         <div class="fr">
-          <div class="field"><label>Max dist (m)</label><input type="number" id="maxDist" value="50" step="5" min="10" max="90"></div>
         </div>
         <button class="btn-calc" onclick="calculate()">Calculate &rarr;</button>
         <div class="err" id="err"></div>
+      </div>
+    </div>
+
+
+    <div class="panel">
+      <div class="ph">Profiles</div>
+      <div class="pb">
+        <div id="profileList" style="margin-bottom:8px"></div>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="profileName" placeholder="Profile name" style="flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:11px;padding:5px 8px;outline:none">
+          <button class="bsm" onclick="saveProfile()">Save</button>
+        </div>
+        <div class="err" id="profileErr" style="margin-top:4px"></div>
       </div>
     </div>
 
@@ -231,6 +243,56 @@
 </div>
 
 <script>
+
+const PROFILE_KEY = 'sightcalc_bb_profiles';
+const BB_FIELDS = ['eyeTip','pointOn','arrowLen','arrowDiam','arrowMass','dist1','crawl1'];
+
+function loadProfiles() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveProfiles(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
+
+function renderProfiles() {
+  const profiles = loadProfiles();
+  const el = document.getElementById('profileList');
+  const names = Object.keys(profiles);
+  if(!names.length){ el.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--dim)">No saved profiles</div>'; return; }
+  el.innerHTML = names.map(name=>`
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+      <button class="bsm" onclick="loadProfile(this.dataset.n)" data-n="${name}">Load</button>
+      <button class="bsm" style="color:var(--danger);border-color:var(--danger)" onclick="deleteProfile(this.dataset.n)" data-n="${name}">x</button>
+    </div>`).join('');
+}
+
+function saveProfile() {
+  const name = document.getElementById('profileName').value.trim();
+  const errEl = document.getElementById('profileErr');
+  if(!name){ errEl.textContent='Enter a profile name.'; return; }
+  errEl.textContent='';
+  const profiles = loadProfiles();
+  const data = {};
+  BB_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el) data[id]=el.value; });
+  profiles[name] = data;
+  saveProfiles(profiles);
+  document.getElementById('profileName').value='';
+  renderProfiles();
+}
+
+function loadProfile(name) {
+  const data = loadProfiles()[name];
+  if(!data) return;
+  BB_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el&&data[id]!==undefined) el.value=data[id]; });
+  calculate();
+}
+
+function deleteProfile(name) {
+  const profiles = loadProfiles();
+  delete profiles[name];
+  saveProfiles(profiles);
+  renderProfiles();
+}
+
 let R = null;
 let tableInterval = 1;
 
@@ -299,11 +361,10 @@ function calculate() {
   const aG       = gi('arrowMass');
   const d1       = gi('dist1');
   const cr1      = gi('crawl1');
-  const mxD      = gi('maxDist');
   const errEl    = document.getElementById('err');
   errEl.textContent = '';
 
-  if([eyeTipM,pointOn,aL,aD,aG,d1,cr1,mxD].some(isNaN)){errEl.textContent='Fill in all fields.';return;}
+  if([eyeTipM,pointOn,aL,aD,aG,d1,cr1].some(isNaN)){errEl.textContent='Fill in all fields.';return;}
   if(d1>=pointOn){errEl.textContent='Calibration distance must be shorter than point-on distance.';return;}
   if(d1<5){errEl.textContent='Minimum calibration distance is 5 m.';return;}
 
@@ -312,21 +373,21 @@ function calculate() {
   // Find velocity by matching the calculated crawl at d1 to the entered crawl.
   // We iterate velocity until crawlAtDist(d1) = cr1.
   // Start low — barebow archers typically shoot 25-55 m/s.
-  let v0=15, step=10, dr=calcDrag(v0,aL,aD,am);
-
-  // First find the point-on angle at current v0
+  // Faster arrow = flatter trajectory = less launch angle at short dist = less crawl
+  // So: more crawl needed → slower arrow → start fast and slow down until crawl matches
+  let v0=60, step=10, dr=calcDrag(v0,aL,aD,am);
   let apOn = findAngle(pointOn, v0, dr, am, 0.001);
   let calcCr = crawlAtDist(d1, v0, eyeTipM, apOn, dr, am);
 
-  // crawl increases as velocity decreases (slower arrow needs more crawl at short range)
-  // so we search: if calcCr < cr1 we need slower arrow (less energy = more drop = more crawl needed)
+  // Step down until calculated crawl exceeds entered crawl
   while(calcCr < cr1) {
     v0 -= step;
-    if(v0 < 5){ errEl.textContent='Velocity too low — check calibration crawl value.'; return; }
+    if(v0 < 5){ errEl.textContent='Velocity too low — check your calibration crawl or point-on distance.'; return; }
     dr = calcDrag(v0,aL,aD,am);
     apOn = findAngle(pointOn, v0, dr, am, 0.001);
     calcCr = crawlAtDist(d1, v0, eyeTipM, apOn, dr, am);
   }
+  // Bisect to converge
   let it=0;
   while(Math.abs(calcCr-cr1)>0.05 && it<60){
     step/=2; it++;
@@ -343,19 +404,18 @@ function calculate() {
     }
   }
 
-  const mxC = Math.max(mxD, pointOn);
   const crawls = [];
   const finalApOn = findAngle(pointOn, v0, dr, am, 0.001);
-  for(let d=1; d<=mxC; d++){
+  for(let d=1; d<=pointOn; d++){
     crawls[d] = crawlAtDist(d, v0, eyeTipM, finalApOn, dr, am);
   }
 
-  R = {crawls, pointOn, d1, cr1, mxD, v0, eyeTipM, aL, aD, aG};
+  R = {crawls, pointOn, d1, cr1, v0, eyeTipM, aL, aD, aG};
 
   document.getElementById('metrics').innerHTML=`
     <div class="metric"><div class="ml">Arrow speed</div><div class="mv">${v0.toFixed(1)}</div><div class="mu">m/s — ${(v0*1000/25.4/12).toFixed(0)} ft/s</div></div>
     <div class="metric"><div class="ml">Point-on</div><div class="mv">${pointOn}</div><div class="mu">metres — zero crawl</div></div>
-    <div class="metric"><div class="ml">Max crawl (${mxD} m)</div><div class="mv">${crawls[mxD]?crawls[mxD].toFixed(1):'—'}</div><div class="mu">mm</div></div>`;
+    <div class="metric"><div class="ml">Max crawl (${d1} m)</div><div class="mv">${crawls[d1]?crawls[d1].toFixed(1):'—'}</div><div class="mu">mm</div></div>`;
 
   document.getElementById('tnote').textContent =
     `At ${pointOn} m you aim directly with the arrow tip — no crawl. Below this distance, crawl increases as distance decreases.`;
@@ -370,15 +430,15 @@ function calculate() {
 
 function getTableDists() {
   if(!R) return [];
-  const{crawls,pointOn,mxD}=R;
+  const{crawls,pointOn}=R;
   const dists=new Set();
   if(tableInterval===1){
-    for(let d=1;d<=mxD;d++) dists.add(d);
+    for(let d=1;d<=pointOn;d++) dists.add(d);
   } else {
-    for(let d=5;d<=mxD;d+=5) dists.add(d);
+    for(let d=5;d<=pointOn;d+=5) dists.add(d);
   }
   dists.add(pointOn);
-  return Array.from(dists).filter(d=>d>=1&&d<=mxD).sort((a,b)=>a-b);
+  return Array.from(dists).filter(d=>d>=1&&d<=pointOn).sort((a,b)=>a-b);
 }
 
 function renderTable() {
@@ -404,7 +464,7 @@ function renderTable() {
 
 function printTable() {
   if(!R) return;
-  const{crawls,pointOn,d1,mxD,v0}=R;
+  const{crawls,pointOn,d1,v0}=R;
   const dists=getTableDists();
   let rows='';
   dists.forEach(d=>{
@@ -436,7 +496,7 @@ function printTable() {
 
 function buildSVG() {
   if(!R) return null;
-  const{crawls,pointOn,mxD}=R;
+  const{crawls,pointOn}=R;
   const iv=parseInt(document.getElementById('optInterval').value);
 
   const PPM=3.7795;
@@ -446,7 +506,7 @@ function buildSVG() {
 
   // Find max crawl for scaling
   let maxCrawlMM=0;
-  for(let d=5;d<=mxD;d+=5) if(crawls[d]&&crawls[d]>maxCrawlMM) maxCrawlMM=crawls[d];
+  for(let d=5;d<=pointOn;d+=5) if(crawls[d]&&crawls[d]>maxCrawlMM) maxCrawlMM=crawls[d];
   maxCrawlMM=Math.ceil(maxCrawlMM/5)*5;
 
   const HMM=maxCrawlMM+padTop+padBot;
@@ -469,11 +529,11 @@ function buildSVG() {
 
   // Tick marks for each distance
   const primary=new Set(), secondary=new Set();
-  for(let d=iv;d<=mxD;d+=iv){
+  for(let d=iv;d<=pointOn;d+=iv){
     if(crawls[d]&&crawls[d]>=0) primary.add(d);
   }
   if(iv===10){
-    for(let d=5;d<=mxD;d+=10){
+    for(let d=5;d<=pointOn;d+=10){
       if(crawls[d]&&crawls[d]>=0&&!primary.has(d)) secondary.add(d);
     }
   }
@@ -520,16 +580,16 @@ function dlSVG(){
 
 function exportCSV(){
   if(!R)return;
-  const{crawls,mxD}=R;
+  const{crawls,pointOn}=R;
   let c='Distance (m),Crawl (mm)\n';
-  for(let d=1;d<=mxD;d++) c+=`${d},${crawls[d]!==undefined?(crawls[d]<0?'beyond point-on':crawls[d].toFixed(1)):''}\n`;
+  for(let d=1;d<=pointOn;d++) c+=`${d},${crawls[d]!==undefined?(crawls[d]<0?'beyond point-on':crawls[d].toFixed(1)):''}\n`;
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'}));
   a.download='crawl-settings.csv'; a.click();
 }
 
 function copyURL(){
-  const ids=['eyeTip','pointOn','arrowLen','arrowDiam','arrowMass','dist1','crawl1','maxDist'];
+  const ids=['eyeTip','pointOn','arrowLen','arrowDiam','arrowMass','dist1','crawl1'];
   const p=new URLSearchParams();
   ids.forEach(id=>p.set(id,document.getElementById(id).value));
   const url=location.origin+location.pathname+'?'+p.toString();
@@ -539,7 +599,7 @@ function copyURL(){
 
 function loadFromURL(){
   const p=new URLSearchParams(location.search);
-  const ids=['eyeTip','pointOn','arrowLen','arrowDiam','arrowMass','dist1','crawl1','maxDist'];
+  const ids=['eyeTip','pointOn','arrowLen','arrowDiam','arrowMass','dist1','crawl1'];
   let found=false;
   ids.forEach(id=>{const v=p.get(id);if(v){document.getElementById(id).value=v;found=true;}});
   if(found)calculate();
