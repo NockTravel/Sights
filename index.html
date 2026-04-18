@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SightCalc </title>
+<title>SightCalc</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -176,6 +176,19 @@
       </div>
     </div>
 
+
+    <div class="panel">
+      <div class="ph">Profiles</div>
+      <div class="pb">
+        <div id="profileList" style="margin-bottom:8px"></div>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="profileName" placeholder="Profile name" style="flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:11px;padding:5px 8px;outline:none">
+          <button class="bsm" onclick="saveProfile()">Save</button>
+        </div>
+        <div class="err" id="profileErr" style="margin-top:4px"></div>
+      </div>
+    </div>
+
     <div class="panel">
       <div class="ph">Share</div>
       <div class="pb">
@@ -258,6 +271,59 @@
 </div>
 
 <script>
+
+const PROFILE_KEY = 'sightcalc_std_profiles';
+const STD_FIELDS = ['eyeSight','eyeArrow','arrowLen','arrowDiam','arrowMass','dist1','set1','dist2','set2','tpi','maxDist'];
+
+function loadProfiles() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveProfiles(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
+
+function renderProfiles() {
+  const profiles = loadProfiles();
+  const el = document.getElementById('profileList');
+  const names = Object.keys(profiles);
+  if(!names.length){ el.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--dim)">No saved profiles</div>'; return; }
+  el.innerHTML = names.map(name=>`
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+      <button class="bsm" onclick="loadProfile(this.dataset.n)" data-n="${name}">Load</button>
+      <button class="bsm" style="color:var(--danger);border-color:var(--danger)" onclick="deleteProfile(this.dataset.n)" data-n="${name}">x</button>
+    </div>`).join('');
+}
+
+function saveProfile() {
+  const name = document.getElementById('profileName').value.trim();
+  const errEl = document.getElementById('profileErr');
+  if(!name){ errEl.textContent='Enter a profile name.'; return; }
+  errEl.textContent='';
+  const profiles = loadProfiles();
+  const data = {};
+  STD_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el) data[id]=el.value; });
+  data['youthBow'] = document.getElementById('youthBow').checked;
+  profiles[name] = data;
+  saveProfiles(profiles);
+  document.getElementById('profileName').value='';
+  renderProfiles();
+}
+
+function loadProfile(name) {
+  const data = loadProfiles()[name];
+  if(!data) return;
+  STD_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el&&data[id]!==undefined) el.value=data[id]; });
+  if(data.youthBow!==undefined) document.getElementById('youthBow').checked=data.youthBow;
+  onYouthChange();
+  calculate();
+}
+
+function deleteProfile(name) {
+  const profiles = loadProfiles();
+  delete profiles[name];
+  saveProfiles(profiles);
+  renderProfiles();
+}
+
 let R = null;
 let tableInterval = 1;
 
