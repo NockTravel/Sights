@@ -17,7 +17,7 @@
     --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
   }
   *, *::before, *::after { box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
   header { border-bottom: 1px solid var(--border); padding: 0.9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
   .header-left { display: flex; align-items: center; gap: 1.5rem; }
   h1 { font-family: var(--mono); font-size: 17px; font-weight: 500; letter-spacing: -0.02em; }
@@ -31,24 +31,24 @@
   .output  { padding: 1rem; overflow-y: auto; border-right: 1px solid var(--border); }
   .tape-col { padding: 1rem; background: var(--surface); overflow-y: auto; }
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.75rem; overflow: hidden; }
-  .ph { background: var(--surface2); padding: 6px 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .ph { background: var(--surface2); padding: 6px 12px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
   .pb { padding: 10px 12px; }
   .fr  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
   .fr3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
   .field { display: flex; flex-direction: column; gap: 3px; }
-  label { font-size: 10px; color: var(--muted); font-family: var(--mono); }
-  input[type="number"], select { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 12px; padding: 6px 8px; width: 100%; outline: none; -moz-appearance: textfield; }
+  label { font-size: 12px; color: var(--muted); font-family: var(--mono); font-weight: 500; }
+  input[type="number"], select { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 7px 8px; width: 100%; outline: none; -moz-appearance: textfield; }
   input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
   input:focus, select:focus { border-color: var(--accent); }
   select:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-calc { width: 100%; background: var(--accent); color: #0f0f0f; border: none; border-radius: 4px; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px; cursor: pointer; margin-top: 4px; transition: background 0.15s; }
   .btn-calc:hover { background: var(--accent2); }
-  .bsm { background: transparent; border: 1px solid var(--border2); border-radius: 4px; color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; padding: 5px 9px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .bsm { background: transparent; border: 1px solid var(--border2); border-radius: 4px; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; padding: 6px 10px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
   .bsm:hover { border-color: var(--accent); color: var(--accent); }
   .err { font-family: var(--mono); font-size: 10px; color: var(--danger); min-height: 14px; margin-top: 6px; }
   .mg { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 1rem; }
   .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
-  .ml { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .ml { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
   .mv { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--accent); line-height: 1.1; }
   .mu { font-size: 10px; color: var(--dim); margin-top: 2px; }
   .tn { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 6px; padding: 7px 10px; margin-bottom: 1rem; font-family: var(--mono); font-size: 10px; color: var(--peak); }
@@ -57,10 +57,10 @@
   .tt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
   .ta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .tc { overflow-y: auto; max-height: 52vh; }
-  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px; }
+  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; }
   thead { position: sticky; top: 0; z-index: 1; }
-  th { background: var(--surface2); color: var(--muted); font-weight: 500; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); }
-  td { padding: 4px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+  th { background: var(--surface2); color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 6px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: rgba(255,255,255,0.02); }
   tr.peak  td { background: #1a1000; color: var(--peak); }
@@ -70,21 +70,21 @@
   .empty { text-align: center; padding: 2.5rem 1rem; color: var(--dim); font-family: var(--mono); font-size: 11px; line-height: 2.4; }
   .info-note { display: flex; align-items: flex-start; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; }
   .info-icon { font-size: 14px; flex-shrink: 0; color: var(--accent); line-height: 1.4; }
-  .info-text { font-family: var(--mono); font-size: 10px; color: var(--muted); line-height: 1.5; }
+  .info-text { font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 1.5; }
   .tape-hd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
   .tape-opts { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
-  .tape-opts label { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); font-family: var(--mono); cursor: pointer; }
+  .tape-opts label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); font-family: var(--mono); cursor: pointer; }
   .tape-opts input[type="checkbox"] { accent-color: var(--accent); }
-  .tape-opts select { width: auto; font-size: 11px; padding: 3px 6px; }
+  .tape-opts select { width: auto; font-size: 12px; padding: 4px 7px; }
   .opt-row { display: flex; align-items: center; gap: 8px; }
-  .opt-row label { min-width: 60px; font-size: 10px; }
+  .opt-row label { min-width: 60px; font-size: 12px; }
   .tape-acts { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
   #tapePreview svg { border: 1px solid var(--border); background: #fff; border-radius: 3px; max-width: 100%; }
-  .legend { display: flex; gap: 14px; margin-top: 10px; font-family: var(--mono); font-size: 10px; color: var(--dim); flex-wrap: wrap; }
+  .legend { display: flex; gap: 14px; margin-top: 10px; font-family: var(--mono); font-size: 12px; color: var(--dim); flex-wrap: wrap; }
   .li { display: flex; align-items: center; gap: 5px; }
   .ld { width: 8px; height: 8px; border-radius: 2px; }
   .seg-ctrl { display: flex; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
-  .seg-btn { background: transparent; border: none; border-right: 1px solid var(--border2); color: var(--muted); font-family: var(--mono); font-size: 10px; padding: 4px 10px; cursor: pointer; transition: all 0.15s; }
+  .seg-btn { background: transparent; border: none; border-right: 1px solid var(--border2); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 5px 11px; cursor: pointer; transition: all 0.15s; }
   .seg-btn:last-child { border-right: none; }
   .seg-btn.active { background: var(--accent); color: #0f0f0f; }
   .seg-btn:hover:not(.active) { color: var(--text); background: var(--surface2); }
@@ -108,6 +108,7 @@
     <nav>
       <span class="nav-link active">Standard</span>
       <a class="nav-link" href="barebow.html">Barebow</a>
+      <a class="nav-link" href="experimental.html">Experimental</a>
     </nav>
   </div>
   <div class="header-right">sight setting calculator</div>
@@ -170,13 +171,27 @@
           <span class="info-icon">&#9432;</span>
           <span class="info-text">Long distance minimum is 40 m. Use 15 m for the short distance where possible.</span>
         </div>
-        <p style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:8px">Tenths of turns — 136 = 13.6 turns</p>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:8px">Tenths of turns — 136 = 13.6 turns</p>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:8px">
+          <input type="checkbox" id="useThreePoint" style="accent-color:var(--accent)" onchange="document.getElementById('threePointPanel').style.display=this.checked?'block':'none'">
+          Use three-point calibration
+        </label>
         <button class="btn-calc" onclick="calculate()">Calculate &rarr;</button>
         <div class="err" id="err"></div>
       </div>
     </div>
 
 
+    <div class="panel" id="threePointPanel" style="display:none">
+      <div class="ph">Third calibration point</div>
+      <div class="pb">
+        <div class="fr" style="align-items:start">
+          <div class="field"><label>Third dist (m)</label><input type="number" id="dist3" value="70" step="5"></div>
+          <div class="field"><label id="set3label">Third setting</label><input type="number" id="set3" value="600" step="1"></div>
+        </div>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:2px">Solver minimises error across all three points for better long-range accuracy.</p>
+      </div>
+    </div>
     <div class="panel">
       <div class="ph">Profiles</div>
       <div class="pb">
@@ -420,6 +435,13 @@ function calculate() {
   const am=aG/15.432359/1000;
   const sgMM=Math.abs(s2-s1)/10/tpi*25.4;
   const isYouth=document.getElementById('youthBow').checked;
+  const useThree = document.getElementById('useThreePoint').checked;
+  const d3 = useThree ? gi('dist3') : null;
+  const s3 = useThree ? gi('set3') : null;
+
+  if(useThree && (isNaN(d3)||isNaN(s3))){ errEl.textContent='Fill in third calibration point.'; return; }
+  if(useThree && (d3<=d1||d3<=d2)){ errEl.textContent='Third distance must be greater than both calibration distances.'; return; }
+
 
   let v0=isYouth?10:30, step=10, dr=calcDrag(v0,aL,aD,am);
   let cg=calcGap(v0,es,ea,d1,d2,dr,am);
@@ -438,7 +460,25 @@ function calculate() {
   let pkMM=-Infinity, pkD=1;
   for(let d=2;d<=Math.min(30,mxC);d++) if(smm[d]>pkMM){pkMM=smm[d];pkD=d;}
 
-  const sc=(s2-s1)/(smm[d2]-smm[d1]), of=s1-sc*smm[d1];
+  let sc=(s2-s1)/(smm[d2]-smm[d1]), of=s1-sc*smm[d1];
+
+  // Three-point refinement: adjust scale to minimise error at third point
+  if(useThree && smm[d3] !== undefined) {
+    const mmShort2=smm[d1], mmLong2=smm[d2], mmThird=smm[d3];
+    // Two-point scale
+    const sc2=(s2-s1)/(mmLong2-mmShort2), of2=s1-sc2*mmShort2;
+    // Third point predicted vs actual
+    const pred3 = sc2*mmThird+of2;
+    const err3 = s3 - pred3;
+    // Blend: weighted average of two-point scale and three-point corrected scale
+    // Use least-squares fit across all three points
+    const dists3=[d1,d2,d3], sets3=[s1,s2,s3];
+    let sumX=0,sumY=0,sumXX=0,sumXY=0,n=3;
+    dists3.forEach((d,i)=>{ const x=smm[d]; sumX+=x; sumY+=sets3[i]; sumXX+=x*x; sumXY+=x*sets3[i]; });
+    const scLS=(n*sumXY-sumX*sumY)/(n*sumXX-sumX*sumX);
+    const ofLS=(sumY-scLS*sumX)/n;
+    sc=scLS; of=ofLS;
+  }
   const toT=mm=>sc*mm+of;
 
   R={smm,toT,pkD,d1,d2,tpi,mxD,v0,sgMM,aL,aD,aG};
