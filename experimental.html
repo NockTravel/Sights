@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SightCalc — Experimental</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f0f; --surface: #181818; --surface2: #222222;
+    --border: #2a2a2a; --border2: #363636;
+    --accent: #f0c030; --accent2: #f8d060;
+    --text: #e8e4dc; --muted: #888880; --dim: #555550;
+    --danger: #e05050; --peak: #c87830;
+    --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .hazard-banner { background: repeating-linear-gradient(-45deg, #f0c030, #f0c030 12px, #0f0f0f 12px, #0f0f0f 24px); padding: 3px 0; }
+  .hazard-inner { background: #1a1500; border-top: 1px solid #4a3800; border-bottom: 1px solid #4a3800; padding: 10px 1.5rem; display: flex; align-items: center; gap: 12px; }
+  .hazard-icon { font-size: 20px; flex-shrink: 0; }
+  .hazard-text { font-family: var(--mono); font-size: 12px; color: #f0c030; line-height: 1.5; }
+  .hazard-text strong { font-weight: 500; font-size: 13px; display: block; margin-bottom: 2px; }
+  header { border-bottom: 1px solid var(--border); padding: 0.9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .header-left { display: flex; align-items: center; gap: 1.5rem; }
+  h1 { font-family: var(--mono); font-size: 17px; font-weight: 500; letter-spacing: -0.02em; }
+  nav { display: flex; gap: 4px; }
+  .nav-link { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; padding: 5px 10px; border-radius: 4px; text-decoration: none; color: var(--muted); border: 1px solid transparent; transition: all 0.15s; }
+  .nav-link.active { color: #f0c030; border-color: #4a3800; background: #1a1500; }
+  .nav-link:hover:not(.active) { color: var(--text); border-color: var(--border); }
+  .header-right { font-family: var(--mono); font-size: 11px; color: #f0c030; letter-spacing: 0.06em; opacity: 0.8; }
+  .app { display: grid; grid-template-columns: 320px 1fr; min-height: calc(100vh - 110px); }
+  .sidebar { border-right: 1px solid var(--border); padding: 1rem; overflow-y: auto; }
+  .output { padding: 1rem; overflow-y: auto; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.75rem; overflow: hidden; }
+  .ph { background: var(--surface2); padding: 6px 12px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .pb { padding: 10px 12px; }
+  .fr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; align-items: start; }
+  .fr3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .field { display: flex; flex-direction: column; gap: 3px; }
+  label { font-size: 12px; color: var(--muted); font-family: var(--mono); font-weight: 500; }
+  input[type="number"] { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 7px 8px; width: 100%; outline: none; -moz-appearance: textfield; }
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type="text"] { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 7px 8px; outline: none; }
+  input:focus { border-color: #f0c030; }
+  .btn-calc { width: 100%; background: #f0c030; color: #0f0f0f; border: none; border-radius: 4px; font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px; cursor: pointer; margin-top: 4px; transition: background 0.15s; }
+  .btn-calc:hover { background: #f8d060; }
+  .bsm { background: transparent; border: 1px solid var(--border2); border-radius: 4px; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; padding: 6px 10px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .bsm:hover { border-color: #f0c030; color: #f0c030; }
+  .err { font-family: var(--mono); font-size: 11px; color: var(--danger); min-height: 14px; margin-top: 6px; }
+  .mg { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 1rem; }
+  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+  .ml { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .mv { font-family: var(--mono); font-size: 18px; font-weight: 500; color: #f0c030; line-height: 1.1; }
+  .mu { font-size: 11px; color: var(--dim); margin-top: 2px; }
+  .tw { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 1rem; }
+  .ttb { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-bottom: 1px solid var(--border); background: var(--surface2); gap: 8px; flex-wrap: wrap; }
+  .tt { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .ta { display: flex; gap: 6px; align-items: center; }
+  .tc { overflow-y: auto; max-height: 38vh; }
+  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; }
+  thead { position: sticky; top: 0; z-index: 1; }
+  th { background: var(--surface2); color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 6px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  tr.confirmed td { background: #1c1800; }
+  tr.calib td { background: #0a1520; color: #78b0e0; }
+  .conf-badge { display: inline-block; background: #f0c030; color: #0f0f0f; font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-left: 6px; font-weight: 500; vertical-align: middle; }
+  .fg { color: #5a9a5a; } .fw { color: var(--peak); } .fb { color: var(--danger); }
+  .cp { color: #5a9a5a; } .cn { color: var(--danger); }
+  .confirm-panel { background: #1a1500; border: 1px solid #4a3800; border-radius: 6px; padding: 12px 14px; margin-bottom: 1rem; }
+  .confirm-title { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #f0c030; margin-bottom: 10px; }
+  .confirm-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px; }
+  .conf-list { margin-top: 8px; }
+  .conf-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 12px; }
+  .conf-item:last-child { border-bottom: none; }
+  .conf-dist { color: var(--text); min-width: 40px; }
+  .conf-val { color: #f0c030; min-width: 60px; }
+  .conf-err { font-size: 11px; min-width: 90px; }
+  .conf-del { margin-left: auto; background: none; border: none; color: var(--dim); cursor: pointer; font-size: 14px; padding: 0 4px; }
+  .conf-del:hover { color: var(--danger); }
+  .fit-bar { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; margin-top: 10px; font-family: var(--mono); }
+  .fit-label { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+  .fit-value { font-size: 14px; font-weight: 500; }
+  .empty { text-align: center; padding: 2.5rem 1rem; color: var(--dim); font-family: var(--mono); font-size: 12px; line-height: 2.4; }
+  .seg-ctrl { display: flex; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
+  .seg-btn { background: transparent; border: none; border-right: 1px solid var(--border2); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 5px 11px; cursor: pointer; transition: all 0.15s; }
+  .seg-btn:last-child { border-right: none; }
+  .seg-btn.active { background: #f0c030; color: #0f0f0f; }
+  .seg-btn:hover:not(.active) { color: var(--text); background: var(--surface2); }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <h1>SightCalc</h1>
+    <nav>
+      <a class="nav-link" href="index.html">Standard</a>
+      <a class="nav-link" href="barebow.html">Barebow</a>
+      <span class="nav-link active">Experimental</span>
+    </nav>
+  </div>
+  <div class="header-right">experimental — use with caution</div>
+</header>
+
+<div class="hazard-banner">
+  <div class="hazard-inner">
+    <span class="hazard-icon">⚠</span>
+    <div class="hazard-text">
+      <strong>Experimental — accuracy not guaranteed</strong>
+      Continuous calibration refines the model using your real confirmed settings. Results may improve or worsen as points are added. Treat all outputs as estimates only.
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <aside class="sidebar">
+
+    <div class="panel">
+      <div class="ph">Geometry</div>
+      <div class="pb">
+        <div class="fr">
+          <div class="field"><label>Peep-sight (mm)</label><input type="number" id="eyeSight" value="800" step="5"></div>
+          <div class="field"><label>Peep-arrow (mm)</label><input type="number" id="eyeArrow" value="100" step="5"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">Arrow</div>
+      <div class="pb">
+        <div class="fr3">
+          <div class="field"><label>Length (mm)</label><input type="number" id="arrowLen" value="700" step="5" min="500"></div>
+          <div class="field"><label>Diam (mm)</label><input type="number" id="arrowDiam" value="5" step="0.01"></div>
+          <div class="field"><label>Mass (gr)</label><input type="number" id="arrowMass" value="380" step="5" min="100"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">Baseline calibration</div>
+      <div class="pb">
+        <div class="fr">
+          <div class="field"><label>Short dist (m)</label><input type="number" id="dist1" value="15" step="1"></div>
+          <div class="field"><label>Short setting</label><input type="number" id="set1" value="136" step="1"></div>
+        </div>
+        <div class="fr">
+          <div class="field"><label>Long dist (m)</label><input type="number" id="dist2" value="50" step="5" min="40"></div>
+          <div class="field"><label>Long setting</label><input type="number" id="set2" value="420" step="1"></div>
+        </div>
+        <div class="fr">
+          <div class="field"><label>Threads/inch</label><input type="number" id="tpi" value="24" step="1"></div>
+          <div class="field"><label>Max dist (m)</label><input type="number" id="maxDist" value="90" step="10"></div>
+        </div>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:8px">Tenths of turns — 136 = 13.6 turns</p>
+        <button class="btn-calc" onclick="calculate()">Calculate baseline &rarr;</button>
+        <div class="err" id="err"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">Profiles</div>
+      <div class="pb">
+        <div id="profileList" style="margin-bottom:8px"></div>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="profileName" placeholder="Profile name" style="flex:1;padding:5px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--mono);font-size:12px;outline:none">
+          <button class="bsm" onclick="saveProfile()">Save</button>
+        </div>
+        <div class="err" id="profileErr" style="margin-top:4px"></div>
+      </div>
+    </div>
+
+  </aside>
+
+  <section class="output">
+    <div id="emptyState" class="empty">
+      Enter baseline calibration and click Calculate.<br>
+      Then add confirmed real-world settings below<br>
+      to refine the model as you shoot.
+    </div>
+
+    <div id="results" style="display:none">
+      <div class="mg" id="metrics"></div>
+
+      <div class="tw">
+        <div class="ttb">
+          <span class="tt">Predicted settings</span>
+          <div class="ta">
+            <div class="seg-ctrl">
+              <button class="seg-btn active" id="ivBtn1" onclick="setIv(1)">1 m</button>
+              <button class="seg-btn" id="ivBtn5" onclick="setIv(5)">5 m</button>
+            </div>
+            <button class="bsm" onclick="exportCSV()">CSV</button>
+          </div>
+        </div>
+        <div class="tc"><table>
+          <thead><tr><th>Dist</th><th>Predicted</th><th>Confirmed</th><th>Error</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table></div>
+      </div>
+
+      <div class="confirm-panel">
+        <div class="confirm-title">&#9650; Add confirmed setting</div>
+        <div class="confirm-row">
+          <div class="field"><label>Distance (m)</label><input type="number" id="confDist" placeholder="e.g. 70" step="1" min="1"></div>
+          <div class="field"><label>Actual setting</label><input type="number" id="confSet" placeholder="tenths" step="1"></div>
+          <button class="bsm" onclick="addConfirmed()" style="margin-bottom:0">Add</button>
+        </div>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">Enter your real measured setting. The model re-solves to best-fit all confirmed points. Saved with profile.</p>
+        <div class="conf-list" id="confList"></div>
+        <div class="fit-bar" id="fitBar" style="display:none">
+          <div class="fit-label">Model fit — RMS error across confirmed points</div>
+          <div class="fit-value" id="fitValue"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+let R=null, iv=1, confirmed={};
+const PKEY='sightcalc_exp_profiles';
+const FIELDS=['eyeSight','eyeArrow','arrowLen','arrowDiam','arrowMass','dist1','set1','dist2','set2','tpi','maxDist'];
+
+function setIv(v){iv=v;document.getElementById('ivBtn1').classList.toggle('active',v===1);document.getElementById('ivBtn5').classList.toggle('active',v===5);if(R)renderTable();}
+
+function traj(td,v0,la,sl,dr,am){
+  const dt=0.002;let x=0,y=0,vx=v0*Math.cos(la),vy=v0*Math.sin(la),a=la;
+  let ax=(-dr*Math.cos(a)/am)-9.8*Math.sin(sl),ay=(-dr*Math.sin(a)/am)-9.8*Math.cos(sl);
+  while(x<td){x+=vx*dt+.5*ax*dt*dt;y+=vy*dt+.5*ay*dt*dt;vx+=ax*dt;vy+=ay*dt;a=vy/vx;
+    ax=(-dr*Math.cos(a)/am)-9.8*Math.sin(sl);ay=(-dr*Math.sin(a)/am)-9.8*Math.cos(sl);}
+  return y-(x-td)*a;
+}
+function drag(v,L,d,m){const rho=1.204,Lm=L/1000,dm=d/1000,A=Math.PI*dm*Lm,Re=v*Lm/1.52e-5;return .5*rho*v*v*A*(0.0576/Math.pow(Re,.2)+0.0016*Lm/dm/Math.pow(Re,.4))*10/7;}
+function angle(dist,v0,dr,am,tol=0.001){
+  let a=0,s=1,dp=traj(dist,v0,a*Math.PI/180,0,dr,am);
+  while(dp<=0){a+=s;dp=traj(dist,v0,a*Math.PI/180,0,dr,am);}
+  let i=0;
+  while(Math.abs(dp)>tol&&i<80){s/=2;i++;while(dp>0){a-=s;dp=traj(dist,v0,a*Math.PI/180,0,dr,am);}s/=2;i++;while(dp<0){a+=s;dp=traj(dist,v0,a*Math.PI/180,0,dr,am);}}
+  return a;
+}
+function gap(v0,es,ea,d1,d2,dr,am){
+  const e1=angle(d1,v0,dr,am),e2=angle(d2,v0,dr,am,.005);
+  return(es*(Math.tan(e2*Math.PI/180)-Math.tan(e1*Math.PI/180))-ea*es*(d2-d1)/d1/d2)*1000;
+}
+function smm(d,v0,es,ea,dr,am){const a=angle(d,v0,dr,am);return((ea*(d-es)/d)-es*Math.tan(a*Math.PI/180))*1000;}
+function gi(id){return parseFloat(document.getElementById(id).value);}
+function disp(t){return(Math.round((t/10)*20)/20).toFixed(2);}
+
+function solve(){
+  const es=gi('eyeSight')/1000,ea=gi('eyeArrow')/1000;
+  const aL=gi('arrowLen'),aD=gi('arrowDiam'),aG=gi('arrowMass');
+  const d1=gi('dist1'),d2=gi('dist2'),s1=gi('set1'),s2=gi('set2'),tpi=gi('tpi');
+  const am=aG/15.432359/1000;
+  const sgMM=Math.abs(s2-s1)/10/tpi*25.4;
+  let v0=30,step=10,dr=drag(v0,aL,aD,am),cg=gap(v0,es,ea,d1,d2,dr,am);
+  while(cg>sgMM){v0+=step;dr=drag(v0,aL,aD,am);cg=gap(v0,es,ea,d1,d2,dr,am);}
+  let it=0;
+  while(Math.abs(cg-sgMM)>.05&&it<50){
+    step/=2;it++;
+    while(cg<sgMM){v0-=step;dr=drag(v0,aL,aD,am);cg=gap(v0,es,ea,d1,d2,dr,am);}
+    step/=2;it++;
+    while(cg>sgMM){v0+=step;dr=drag(v0,aL,aD,am);cg=gap(v0,es,ea,d1,d2,dr,am);}
+  }
+  return{v0,dr,es,ea,am,aL,aD};
+}
+
+function calculate(){
+  const errEl=document.getElementById('err');errEl.textContent='';
+  const d1=gi('dist1'),d2=gi('dist2'),s1=gi('set1'),s2=gi('set2'),tpi=gi('tpi'),mxD=gi('maxDist');
+  const aG=gi('arrowMass'),aL=gi('arrowLen'),aD=gi('arrowDiam');
+  const es=gi('eyeSight')/1000,ea=gi('eyeArrow')/1000;
+  if([es,ea,aL,aD,aG,d1,d2,s1,s2,tpi,mxD].some(isNaN)){errEl.textContent='Fill in all fields.';return;}
+  if(d1>=d2){errEl.textContent='Short dist must be less than long dist.';return;}
+
+  const{v0,dr,am}=solve();
+  const mxC=Math.max(mxD,d2),smmArr=[];
+  for(let d=1;d<=mxC;d++) smmArr[d]=smm(d,v0,es,ea,dr,am/1);
+
+  const pts=[{d:d1,s:s1},{d:d2,s:s2},...Object.entries(confirmed).map(([d,s])=>({d:parseInt(d),s:parseFloat(s)}))];
+  let sx=0,sy=0,sxx=0,sxy=0,n=pts.length;
+  pts.forEach(p=>{const x=smmArr[p.d]||0;sx+=x;sy+=p.s;sxx+=x*x;sxy+=x*p.s;});
+  const den=n*sxx-sx*sx;
+  let sc,of;
+  if(Math.abs(den)<1e-10){sc=(s2-s1)/(smmArr[d2]-smmArr[d1]);of=s1-sc*smmArr[d1];}
+  else{sc=(n*sxy-sx*sy)/den;of=(sy-sc*sx)/n;}
+
+  let pkMM=-Infinity,pkD=1;
+  for(let d=2;d<=Math.min(30,mxD);d++) if(smmArr[d]>pkMM){pkMM=smmArr[d];pkD=d;}
+
+  R={smmArr,toT:mm=>sc*mm+of,pkD,d1,d2,tpi,mxD,v0};
+
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="ml">Arrow speed</div><div class="mv">${v0.toFixed(1)}</div><div class="mu">m/s — ${(v0*1000/25.4/12).toFixed(0)} ft/s</div></div>
+    <div class="metric"><div class="ml">Turnover</div><div class="mv">${pkD}</div><div class="mu">metres</div></div>
+    <div class="metric"><div class="ml">Confirmed</div><div class="mv">${Object.keys(confirmed).length}</div><div class="mu">points refining</div></div>
+    <div class="metric"><div class="ml">mm / turn</div><div class="mv">${(25.4/tpi).toFixed(3)}</div><div class="mu">${tpi} tpi</div></div>`;
+
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('results').style.display='block';
+  renderTable();renderConfList();updateFit();
+}
+
+function addConfirmed(){
+  const d=parseInt(document.getElementById('confDist').value);
+  const s=parseFloat(document.getElementById('confSet').value);
+  if(isNaN(d)||isNaN(s)||d<1) return;
+  confirmed[d]=s;
+  document.getElementById('confDist').value='';
+  document.getElementById('confSet').value='';
+  if(R) calculate();
+}
+
+function removeConf(d){delete confirmed[d];if(R) calculate();}
+
+function renderConfList(){
+  const el=document.getElementById('confList');
+  const keys=Object.keys(confirmed).map(Number).sort((a,b)=>a-b);
+  if(!keys.length){el.innerHTML='';return;}
+  el.innerHTML=keys.map(d=>{
+    const s=confirmed[d];
+    const pred=R&&R.smmArr[d]?R.toT(R.smmArr[d]):null;
+    const err=pred!==null?((s-pred)/10):null;
+    const ec=err===null?'':(Math.abs(err)<0.1?'fg':Math.abs(err)<0.3?'fw':'fb');
+    return `<div class="conf-item"><span class="conf-dist">${d} m</span><span class="conf-val">${disp(s)}</span><span class="conf-err ${ec}">${err!==null?(err>=0?'+':'')+err.toFixed(2)+' turns':''}</span><button class="conf-del" onclick="removeConf(${d})">&#10005;</button></div>`;
+  }).join('');
+}
+
+function updateFit(){
+  const bar=document.getElementById('fitBar'),val=document.getElementById('fitValue');
+  const pts=Object.entries(confirmed).map(([d,s])=>({d:parseInt(d),s:parseFloat(s)}));
+  if(!pts.length||!R){bar.style.display='none';return;}
+  bar.style.display='block';
+  let sq=0;pts.forEach(p=>{if(R.smmArr[p.d]){const e=(p.s-R.toT(R.smmArr[p.d]))/10;sq+=e*e;}});
+  const rms=Math.sqrt(sq/pts.length);
+  const cls=rms<0.1?'fg':rms<0.3?'fw':'fb';
+  val.className='fit-value '+cls;
+  val.textContent='±'+rms.toFixed(3)+' turns RMS across '+pts.length+' point'+(pts.length>1?'s':'');
+}
+
+function renderTable(){
+  if(!R) return;
+  const{smmArr,toT,pkD,d1,d2,mxD}=R;
+  const tb=document.getElementById('tbody');tb.innerHTML='';
+  const dists=[];
+  if(iv===1){for(let d=1;d<=mxD;d++) dists.push(d);}
+  else{for(let d=5;d<=mxD;d+=5) dists.push(d);if(!dists.includes(18)&&smmArr[18]) dists.push(18);dists.sort((a,b)=>a-b);}
+  let pT=null;
+  dists.forEach(d=>{
+    if(!smmArr[d]) return;
+    const t=toT(smmArr[d]);
+    const ch=pT!==null?(t-pT)/10:null;
+    const chCls=ch===null?'':ch>0?'cp':'cn';
+    const conf=confirmed[d];
+    const err=conf!==undefined?((conf-t)/10):null;
+    const ec=err===null?'':(Math.abs(err)<0.1?'fg':Math.abs(err)<0.3?'fw':'fb');
+    const tr=document.createElement('tr');
+    if(conf!==undefined) tr.className='confirmed';
+    else if(d===d1||d===d2) tr.className='calib';
+    tr.innerHTML=`<td>${d} m${d===pkD?' ▲':''}</td>
+      <td>${disp(t)}${d===d1||d===d2?'<span class="conf-badge">CAL</span>':''}</td>
+      <td>${conf!==undefined?'<strong>'+disp(conf)+'</strong>':''}</td>
+      <td class="${ec}">${err!==null?(err>=0?'+':'')+err.toFixed(2):'—'}</td>`;
+    tb.appendChild(tr);pT=t;
+  });
+}
+
+function exportCSV(){
+  if(!R)return;
+  const{smmArr,toT,mxD}=R;
+  let c='Distance (m),Predicted,Confirmed,Error (turns)\n';
+  for(let d=1;d<=mxD;d++){if(!smmArr[d])continue;
+    const pred=disp(toT(smmArr[d]));
+    const conf=confirmed[d]!==undefined?disp(confirmed[d]):'';
+    const err=confirmed[d]!==undefined?((confirmed[d]-toT(smmArr[d]))/10).toFixed(2):'';
+    c+=`${d},${pred},${conf},${err}\n`;}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'}));a.download='exp-settings.csv';a.click();
+}
+
+function loadP(){try{return JSON.parse(localStorage.getItem(PKEY)||'{}');}catch(e){return {};}}
+function saveP(p){localStorage.setItem(PKEY,JSON.stringify(p));}
+function renderProfiles(){
+  const profiles=loadP(),el=document.getElementById('profileList'),names=Object.keys(profiles);
+  if(!names.length){el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--dim)">No saved profiles</div>';return;}
+  el.innerHTML=names.map(n=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+    <span style="font-family:var(--mono);font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
+    <button class="bsm" onclick="loadProfile(this.dataset.n)" data-n="${n}">Load</button>
+    <button class="bsm" style="color:var(--danger);border-color:var(--danger)" onclick="delProfile(this.dataset.n)" data-n="${n}">x</button>
+  </div>`).join('');
+}
+function saveProfile(){
+  const name=document.getElementById('profileName').value.trim();
+  const errEl=document.getElementById('profileErr');
+  if(!name){errEl.textContent='Enter a name.';return;}errEl.textContent='';
+  const profiles=loadP(),data={};
+  FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)data[id]=el.value;});
+  data._confirmed=confirmed;profiles[name]=data;saveP(profiles);
+  document.getElementById('profileName').value='';renderProfiles();
+}
+function loadProfile(name){
+  const data=loadP()[name];if(!data)return;
+  FIELDS.forEach(id=>{const el=document.getElementById(id);if(el&&data[id]!==undefined)el.value=data[id];});
+  confirmed=data._confirmed||{};calculate();
+}
+function delProfile(name){const p=loadP();delete p[name];saveP(p);renderProfiles();}
+window.addEventListener('load',renderProfiles);
+</script>
+</body>
+</html>
