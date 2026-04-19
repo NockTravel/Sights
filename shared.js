@@ -25,6 +25,11 @@ function fromUnit(val) {
   return currentUnit === 'm' ? val : val / 1.09361;
 }
 
+// Convert calibration distances to metres for physics (always work in metres internally)
+function toMetres(val) {
+  return currentUnit === 'm' ? val : val * 0.9144;
+}
+
 function unitLabel() { return currentUnit; }
 
 /* ── Theme ── */
@@ -121,12 +126,12 @@ function buildSettingsPanel() {
       <div class="setting-group-title">Theme</div>
       <div class="theme-grid">
         ${THEMES.map(t => `
-          <div class="theme-card${t.id===savedTheme?' active':''}" data-theme="${t.id}" onclick="applyTheme('${t.id}')">
-            <div class="theme-card-swatch" style="background:${t.swatch.bg};color:${t.swatch.accent};border:1px solid ${t.swatch.accent}44">
-              <span style="font-family:monospace;font-size:9px;letter-spacing:0.08em;opacity:0.9">Aa</span>
+          <div class="theme-card${t.id===savedTheme?' active':''}" data-theme="${t.id}" onclick="applyTheme('${t.id}')" style="background:${t.swatch.bg};border:1px solid ${t.id===savedTheme?t.swatch.accent+'88':'transparent'}">
+            <div style="height:28px;border-radius:4px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:${t.swatch.bg};border:1px solid ${t.swatch.accent}55;filter:brightness(${t.id==='light'?'0.94':'1.18'})">
+              <span style="font-family:monospace;font-size:10px;color:${t.swatch.accent}">Aa</span>
             </div>
-            <div class="theme-card-name" style="color:${t.swatch.text};font-family:monospace">${t.name}</div>
-            <div class="theme-card-desc" style="color:${t.swatch.muted}">${t.desc}</div>
+            <div style="font-family:monospace;font-size:11px;font-weight:500;color:${t.swatch.text};margin-bottom:2px">${t.name}</div>
+            <div style="font-family:monospace;font-size:10px;color:${t.swatch.muted};line-height:1.4">${t.desc}</div>
           </div>`).join('')}
       </div>
     </div>
