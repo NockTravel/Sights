@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page="experimental">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,6 +34,11 @@
   .fg { color: #5a9a5a; } .fw { color: var(--peak); } .fb { color: var(--danger); }
   tr.confirmed td { background: rgba(240,192,48,0.06); }
   .conf-badge { display: inline-block; background: var(--accent); color: #0f0f0f; font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-left: 6px; font-weight: 500; vertical-align: middle; }
+</style>
+<style>
+  :root { --stamp: #8b6a00; }
+  [data-theme="paper"] .paper-stamp-svg rect { stroke: #8b6a00 !important; }
+  [data-theme="paper"] .paper-stamp-svg text { fill: #8b6a00 !important; }
 </style>
 </head>
 <body>
