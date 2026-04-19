@@ -13,14 +13,11 @@
   .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
   .tool-card { display: block; text-decoration: none; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; transition: border-color 0.15s, background 0.15s; }
   .tool-card:hover { border-color: var(--accent); background: var(--surface2); }
-  .tool-card.disabled { cursor: default; opacity: 0.6; }
-  .tool-card.disabled:hover { border-color: var(--border); background: var(--surface); }
   .tool-card-icon { font-size: 28px; margin-bottom: 12px; line-height: 1; }
   .tool-card-title { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
   .tool-card-desc { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.6; }
   .badge { display: inline-block; margin-top: 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 4px; }
   .badge-ready { background: rgba(90,160,90,0.12); color: #5a9a5a; border: 1px solid rgba(90,160,90,0.3); }
-  .badge-soon { background: var(--surface2); color: var(--dim); border: 1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -28,7 +25,7 @@
   <h1>SightCalc</h1>
   <nav>
     <span class="nav-link active">Workshop</span>
-    <a class="nav-link" href="foc.html">FOC Calculator</a>
+    <a class="nav-link" href="foc.html">FOC</a>
     <a class="nav-link" href="arrow-builder.html">Arrow Builder</a>
     <a class="nav-link" href="bow-buddy.html">Bow Buddy</a>
   </nav>
@@ -44,7 +41,7 @@
   </div>
 </div>
 <div class="tools-wrap">
-  <p class="tools-intro">Tools for building and tuning arrows. Select a tool below.</p>
+  <p class="tools-intro">Workshop tools for building and tuning your equipment.</p>
   <div class="tools-grid">
     <a class="tool-card" href="foc.html">
       <div class="tool-card-icon">⚖</div>
