@@ -216,7 +216,7 @@
   <div class="ps-setup-body">
     <div class="ps-setup-section">
       <h3>Session name</h3>
-      <input type="text" id="ps-session-name" class="ps-setup-section" style="border:1px solid var(--border2);border-radius:4px;background:var(--input-bg,var(--bg));color:var(--text);font-family:var(--mono);font-size:13px;padding:8px;width:100%;outline:none" placeholder="e.g. Training – 70m outdoor">
+      <input type="text" id="ps-session-name" style="border:1px solid var(--border2);border-radius:4px;background:var(--input-bg,var(--bg));color:var(--text);font-family:var(--mono);font-size:13px;padding:8px;width:100%;outline:none" placeholder="e.g. Training – 70m outdoor">
     </div>
     <div class="ps-setup-section">
       <h3>Target face</h3>
@@ -242,7 +242,7 @@
     </div>
     <div class="ps-setup-section">
       <h3>Arrows per end</h3>
-      <input type="number" id="ps-ape" value="6" min="1" max="12" class="ps-setup-section" style="border:1px solid var(--border2);border-radius:4px;background:var(--input-bg,var(--bg));color:var(--text);font-family:var(--mono);font-size:16px;padding:8px;width:100%;outline:none">
+      <input type="number" id="ps-ape" value="6" min="1" max="12" style="border:1px solid var(--border2);border-radius:4px;background:var(--input-bg,var(--bg));color:var(--text);font-family:var(--mono);font-size:16px;padding:8px;width:100%;outline:none">
     </div>
     <div class="ps-setup-section">
       <h3>Arrow numbers</h3>
@@ -255,8 +255,8 @@
         <div class="ps-arrow-chips" id="ps-arrow-chips"></div>
       </div>
     </div>
+    <button class="ps-start-btn" style="margin:0;width:100%" onclick="psStartSession()">Start Session →</button>
   </div>
-  <button class="ps-start-btn" onclick="psStartSession()">Start Session →</button>
 </div>
 
 <!-- ── SCORING ── -->
