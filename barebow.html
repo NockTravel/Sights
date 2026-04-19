@@ -1,124 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page="barebow">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SightCalc — Barebow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0f0f0f; --surface: #181818; --surface2: #222222;
-    --border: #2a2a2a; --border2: #363636;
-    --accent: #7aab8a; --accent2: #9acbaa;
-    --text: #e8e4dc; --muted: #888880; --dim: #555550;
-    --danger: #e05050; --peak: #c87830;
-    --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
-  }
-  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
-  header { border-bottom: 1px solid var(--border); padding: 0.9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-  .header-left { display: flex; align-items: center; gap: 1.5rem; }
-  h1 { font-family: var(--mono); font-size: 17px; font-weight: 500; letter-spacing: -0.02em; }
-  nav { display: flex; gap: 4px; }
-  .nav-link { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; padding: 5px 10px; border-radius: 4px; text-decoration: none; color: var(--muted); border: 1px solid transparent; transition: all 0.15s; cursor: pointer; }
-  .nav-link.active { color: var(--accent); border-color: var(--border2); background: var(--surface); }
-  .nav-link:hover:not(.active) { color: var(--text); border-color: var(--border); }
-  .header-right { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
-  .app { display: grid; grid-template-columns: 310px 1fr 240px; min-height: calc(100vh - 52px); }
-  .sidebar { border-right: 1px solid var(--border); padding: 1rem; overflow-y: auto; }
-  .output  { padding: 1rem; overflow-y: auto; border-right: 1px solid var(--border); }
-  .tape-col { padding: 1rem; background: var(--surface); overflow-y: auto; }
-  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.75rem; overflow: hidden; }
-  .ph { background: var(--surface2); padding: 6px 12px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
-  .pb { padding: 10px 12px; }
-  .fr  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .fr3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .field { display: flex; flex-direction: column; gap: 3px; }
-  label { font-size: 12px; color: var(--muted); font-family: var(--mono); font-weight: 500; }
-  input[type="number"], select { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 7px 8px; width: 100%; outline: none; -moz-appearance: textfield; }
-  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
-  input:focus, select:focus { border-color: var(--accent); }
-  .btn-calc { width: 100%; background: var(--accent); color: #0f0f0f; border: none; border-radius: 4px; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px; cursor: pointer; margin-top: 4px; transition: background 0.15s; }
-  .btn-calc:hover { background: var(--accent2); }
-  .bsm { background: transparent; border: 1px solid var(--border2); border-radius: 4px; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; padding: 6px 10px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
-  .bsm:hover { border-color: var(--accent); color: var(--accent); }
-  .err { font-family: var(--mono); font-size: 10px; color: var(--danger); min-height: 14px; margin-top: 6px; }
-  .mg { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 1rem; }
-  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
-  .ml { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
-  .mv { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--accent); line-height: 1.1; }
-  .mu { font-size: 10px; color: var(--dim); margin-top: 2px; }
-  .tn { background: #0a1a0a; border: 1px solid #1a3a1a; border-radius: 6px; padding: 7px 10px; margin-bottom: 1rem; font-family: var(--mono); font-size: 10px; color: var(--accent); }
-  .tw { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-  .ttb { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-bottom: 1px solid var(--border); background: var(--surface2); gap: 8px; flex-wrap: wrap; }
-  .tt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-  .ta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .tc { overflow-y: auto; max-height: 55vh; }
-  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; }
-  thead { position: sticky; top: 0; z-index: 1; }
-  th { background: var(--surface2); color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); }
-  td { padding: 6px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
-  tr.pton td { background: #0a1a0a; color: var(--accent); font-weight: 500; }
-  tr.calib td { background: #0a1520; color: #78b0e0; }
-  tr.zero td { color: var(--dim); }
-  .empty { text-align: center; padding: 2.5rem 1rem; color: var(--dim); font-family: var(--mono); font-size: 11px; line-height: 2.4; }
-  .info-note { display: flex; align-items: flex-start; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; }
-  .info-icon { font-size: 14px; flex-shrink: 0; color: var(--accent); line-height: 1.4; }
-  .info-text { font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 1.5; }
-  .tape-hd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-  .tape-opts { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
-  .tape-opts label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); font-family: var(--mono); cursor: pointer; }
-  .tape-opts input[type="checkbox"] { accent-color: var(--accent); }
-
-  .switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
-  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .switch-track { position: absolute; inset: 0; background: var(--border2); border-radius: 20px; transition: background 0.2s; cursor: pointer; }
-  .switch-track::after { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #888; border-radius: 50%; transition: transform 0.2s, background 0.2s; }
-  .switch input:checked + .switch-track { background: var(--accent); }
-  .switch input:checked + .switch-track::after { transform: translateX(16px); background: #fff; }
-  .switch-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--muted); user-select: none; }
-
-  .tape-opts select { width: auto; font-size: 12px; padding: 4px 7px; }
-  .opt-row { display: flex; align-items: center; gap: 8px; }
-  .opt-row label { min-width: 60px; font-size: 12px; }
-  .tape-acts { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-  #tapePreview svg { border: 1px solid var(--border); background: #fff; border-radius: 3px; max-width: 100%; }
-  .legend { display: flex; gap: 14px; margin-top: 10px; font-family: var(--mono); font-size: 12px; color: var(--dim); flex-wrap: wrap; }
-  .li { display: flex; align-items: center; gap: 5px; }
-  .ld { width: 8px; height: 8px; border-radius: 2px; }
-  .seg-ctrl { display: flex; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
-  .seg-btn { background: transparent; border: none; border-right: 1px solid var(--border2); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 5px 11px; cursor: pointer; transition: all 0.15s; }
-  .seg-btn:last-child { border-right: none; }
-  .seg-btn.active { background: var(--accent); color: #0f0f0f; }
-  .seg-btn:hover:not(.active) { color: var(--text); background: var(--surface2); }
-  @media (max-width: 1050px) { .app { grid-template-columns: 300px 1fr; } .tape-col { display: none; } }
-  @media (max-width: 680px)  { .app { grid-template-columns: 1fr; } .sidebar { border-right: none; border-bottom: 1px solid var(--border); } .mg { grid-template-columns: repeat(2,1fr); } }
-  @media print {
-    body, .app { display: block; background: white; }
-    .sidebar, .output, header { display: none !important; }
-    .tape-col { display: block !important; padding: 0; background: white; border: none; }
-    .tape-hd, .tape-opts, .tape-acts { display: none !important; }
-    #tapePreview svg { border: none; }
-    @page { margin: 5mm; size: A4 portrait; }
-  }
+  /* Barebow accent override */
+  :root, [data-theme="dark"]    { --accent: #7aab8a; --accent2: #9acbaa; --btn-calc-color: #0f0f0f; }
+  [data-theme="contrast"]       { --accent: #ffffff; --accent2: #dddddd; }
+  [data-theme="dawn"]           { --accent: #c85040; --accent2: #e06050; }
+  [data-theme="paper"]          { --accent: #2d5a1e; --accent2: #3d7a2e; }
+  .app { grid-template-columns: 310px 1fr 220px; }
+  tr.pton td { background: rgba(122,171,138,0.12); color: #7aab8a; font-weight: 500; }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-left">
-    <h1>SightCalc</h1>
-    <nav>
-      <a class="nav-link" href="index.html">Standard</a>
-      <span class="nav-link active">Barebow</span>
-      <a class="nav-link" href="experimental.html">Experimental</a>
-    </nav>
-  </div>
+  <h1>SightCalc</h1>
+  <nav>
+    <a class="nav-link" href="index.html">Standard</a>
+    <span class="nav-link active">Barebow</span>
+    <a class="nav-link" href="experimental.html">Experimental</a>
+  </nav>
   <div class="header-right">string walking calculator</div>
+  <button class="burger-btn" onclick="openSettings()" aria-label="Settings">
+    <span></span><span></span><span></span>
+  </button>
 </header>
+
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <div class="settings-header">
+      Settings
+      <button class="settings-close" onclick="closeSettings()">&#10005;</button>
+    </div>
+    <div class="settings-body" id="settingsBody"></div>
+  </div>
+</div>
 
 <div class="app">
   <aside class="sidebar">
@@ -127,18 +49,12 @@
       <div class="ph">Geometry</div>
       <div class="pb">
         <div class="fr">
-          <div class="field">
-            <label>Eye to arrow tip (mm)</label>
-            <input type="number" id="eyeTip" value="750" step="5">
-          </div>
-          <div class="field">
-            <label>Point-on distance (m)</label>
-            <input type="number" id="pointOn" value="30" step="1" min="5" max="90">
-          </div>
+          <div class="field"><label>Eye to tip (mm)</label><input type="number" id="eyeTip" value="750" step="5"></div>
+          <div class="field"><label>Point-on (<span class="unit-label">m</span>)</label><input type="number" id="pointOn" value="30" step="1" min="5"></div>
         </div>
         <div class="info-note">
           <span class="info-icon">&#9432;</span>
-          <span class="info-text">Eye to arrow tip: measured at full draw, zero crawl position. Point-on: distance at which you aim directly with the tip, no crawl.</span>
+          <span class="info-text">Eye to arrow tip at full draw, zero crawl. Point-on: distance where you aim directly with the tip.</span>
         </div>
       </div>
     </div>
@@ -149,7 +65,7 @@
         <div class="fr3">
           <div class="field"><label>Length</label><input type="number" id="arrowLen" value="680" step="5" min="500"></div>
           <div class="field"><label>Diam</label><input type="number" id="arrowDiam" value="5" step="0.01"></div>
-          <div class="field"><label>Mass</label><input type="number" id="arrowMass" value="320" step="5" min="100"></div>
+          <div class="field"><label>Mass (gr)</label><input type="number" id="arrowMass" value="320" step="5" min="100"></div>
         </div>
       </div>
     </div>
@@ -158,18 +74,16 @@
       <div class="ph">Calibration</div>
       <div class="pb">
         <div class="fr">
-          <div class="field"><label>Short dist (m)</label><input type="number" id="dist1" value="10" step="1" min="5"></div>
+          <div class="field"><label>Short dist (<span class="unit-label">m</span>)</label><input type="number" id="dist1" value="10" step="1" min="5"></div>
           <div class="field"><label>Crawl (mm)</label><input type="number" id="crawl1" value="45" step="0.5"></div>
         </div>
-        <div class="fr" style="align-items:start;opacity:0.35;pointer-events:none" id="midRow">
-          <div class="field"><label>Mid dist (m)</label><input type="number" id="dist3" value="20" step="1" min="5" disabled></div>
+        <div class="fr" id="midRow" style="opacity:0.35;pointer-events:none">
+          <div class="field"><label>Mid dist (<span class="unit-label">m</span>)</label><input type="number" id="dist3" value="20" step="1" min="5" disabled></div>
           <div class="field"><label>Mid crawl</label><input type="number" id="crawl3" value="" step="0.5" disabled placeholder="—"></div>
         </div>
         <div class="info-note" style="margin-bottom:8px">
           <span class="info-icon">&#9432;</span>
-          <span class="info-text">Enter a known crawl measurement at a short distance to calibrate the model. Crawl is measured from the nocking point down to the top of the index finger.</span>
-        </div>
-        <div class="fr">
+          <span class="info-text">Crawl measured from nocking point down to top of index finger.</span>
         </div>
         <label class="switch-label" style="margin-bottom:8px">
           <span class="switch"><input type="checkbox" id="useThreePoint" onchange="onThreePointChange()"><span class="switch-track"></span></span>
@@ -180,24 +94,20 @@
       </div>
     </div>
 
-
-
     <div class="panel">
       <div class="ph">Profiles</div>
       <div class="pb">
         <div id="profileList" style="margin-bottom:8px"></div>
-        <div style="display:flex;gap:6px">
-          <input type="text" id="profileName" placeholder="Profile name" style="flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:11px;padding:5px 8px;outline:none">
-          <button class="bsm" onclick="saveProfile()">Save</button>
-        </div>
-        <div class="err" id="profileErr" style="margin-top:4px"></div>
+        <div class="field" style="margin-bottom:8px"><label>Name</label><input type="text" id="profileName" placeholder="Profile name..."></div>
+        <button class="bsm" onclick="saveProfile()" style="width:100%">Save profile</button>
+        <div class="err" id="profileErr"></div>
       </div>
     </div>
 
     <div class="panel">
       <div class="ph">Share</div>
       <div class="pb">
-        <button class="bsm" onclick="copyURL()" style="width:100%">Copy settings URL</button>
+        <button class="bsm" onclick="doShare()" style="width:100%">Copy settings URL</button>
         <div id="urlBar" style="display:none;margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--dim);word-break:break-all;background:var(--bg);padding:6px 8px;border-radius:4px;border:1px solid var(--border)"></div>
       </div>
     </div>
@@ -205,9 +115,7 @@
   </aside>
 
   <section class="output">
-    <div id="emptyState" class="empty">
-      Enter your geometry and calibration values,<br>then click Calculate.<br>Tab tape appears on the right.
-    </div>
+    <div id="emptyState" class="empty">Enter geometry and calibration,<br>then click Calculate.<br>Tab tape appears on the right.</div>
     <div id="results" style="display:none">
       <div class="mg" id="metrics"></div>
       <div class="tn" id="tnote"></div>
@@ -216,8 +124,8 @@
           <span class="tt">String crawl by distance</span>
           <div class="ta">
             <div class="seg-ctrl">
-              <button class="seg-btn active" id="ivBtn1" onclick="setTableInterval(1)">1 m</button>
-              <button class="seg-btn" id="ivBtn5" onclick="setTableInterval(5)">5 m</button>
+              <button class="seg-btn active" id="ivBtn1" onclick="setIv(1)">1 <span class="unit-label">m</span></button>
+              <button class="seg-btn" id="ivBtn5" onclick="setIv(5)">5 <span class="unit-label">m</span></button>
             </div>
             <button class="bsm" onclick="printTable()">Print</button>
             <button class="bsm" onclick="exportCSV()">CSV</button>
@@ -230,9 +138,9 @@
           </table>
         </div>
       </div>
-      <div class="legend" style="margin-top:10px">
-        <div class="li"><div class="ld" style="background:#0a1a0a"></div> Point-on distance</div>
-        <div class="li"><div class="ld" style="background:#0e1c2c"></div> Calibration distance</div>
+      <div class="legend">
+        <div class="li"><div class="ld" style="background:rgba(122,171,138,0.2)"></div> Point-on</div>
+        <div class="li"><div class="ld" style="background:#0e1c2c"></div> Calibration</div>
       </div>
     </div>
   </section>
@@ -249,7 +157,7 @@
       </div>
       <div class="info-note" style="margin-top:4px">
         <span class="info-icon">&#9432;</span>
-        <span class="info-text">WA barebow rules permit lines only — no numbers or text on the tab. Two line lengths allowed: long for primary distances, short for intermediate.</span>
+        <span class="info-text">WA rules: lines only, no numbers. Two tick lengths permitted.</span>
       </div>
     </div>
     <div class="tape-acts">
@@ -261,77 +169,11 @@
   </aside>
 </div>
 
+<script src="shared.js"></script>
 <script>
-
-const PROFILE_KEY = 'sightcalc_bb_profiles';
 const BB_FIELDS = ['eyeTip','pointOn','arrowLen','arrowDiam','arrowMass','dist1','crawl1'];
-
-function loadProfiles() {
-  try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}'); } catch(e) { return {}; }
-}
-function saveProfiles(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
-
-function renderProfiles() {
-  const profiles = loadProfiles();
-  const el = document.getElementById('profileList');
-  const names = Object.keys(profiles);
-  if(!names.length){ el.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--dim)">No saved profiles</div>'; return; }
-  el.innerHTML = names.map(name=>`
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-      <span style="font-family:var(--mono);font-size:11px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
-      <button class="bsm" onclick="loadProfile(this.dataset.n)" data-n="${name}">Load</button>
-      <button class="bsm del-btn" style="color:var(--danger);border-color:var(--danger)" onclick="confirmDelete(this, this.dataset.n)" data-n="${name}" data-confirming="false">&#10005;</button>
-    </div>`).join('');
-}
-
-function saveProfile() {
-  const name = document.getElementById('profileName').value.trim();
-  const errEl = document.getElementById('profileErr');
-  if(!name){ errEl.textContent='Enter a profile name.'; return; }
-  errEl.textContent='';
-  const profiles = loadProfiles();
-  const data = {};
-  BB_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el) data[id]=el.value; });
-  profiles[name] = data;
-  saveProfiles(profiles);
-  document.getElementById('profileName').value='';
-  renderProfiles();
-}
-
-function loadProfile(name) {
-  const data = loadProfiles()[name];
-  if(!data) return;
-  BB_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el&&data[id]!==undefined) el.value=data[id]; });
-  calculate();
-}
-
-
-function confirmDelete(btn, name) {
-  if (btn.dataset.confirming === 'true') {
-    deleteProfile(name);
-  } else {
-    btn.dataset.confirming = 'true';
-    btn.textContent = 'confirm?';
-    btn.style.background = 'var(--danger)';
-    btn.style.color = '#fff';
-    btn.style.borderColor = 'var(--danger)';
-    btn.style.padding = '6px 8px';
-    clearTimeout(btn._timer);
-    btn._timer = setTimeout(() => {
-      btn.dataset.confirming = 'false';
-      btn.textContent = '\u2715';
-      btn.style.background = '';
-      btn.style.color = 'var(--danger)';
-      btn.style.padding = '';
-    }, 3000);
-  }
-}
-function deleteProfile(name) {
-  const profiles = loadProfiles();
-  delete profiles[name];
-  saveProfiles(profiles);
-  renderProfiles();
-}
+const PKEY = 'sightcalc_bb_profiles';
+let R = null, iv = 1;
 
 function onThreePointChange() {
   const on = document.getElementById('useThreePoint').checked;
@@ -341,341 +183,182 @@ function onThreePointChange() {
   row.querySelectorAll('input').forEach(i => i.disabled = !on);
 }
 
-let R = null;
-let tableInterval = 1;
-
-function setTableInterval(iv) {
-  tableInterval = iv;
-  document.getElementById('ivBtn1').classList.toggle('active', iv===1);
-  document.getElementById('ivBtn5').classList.toggle('active', iv===5);
-  if(R) renderTable();
+function setIv(v) {
+  iv = v;
+  document.getElementById('ivBtn1').classList.toggle('active', v===1);
+  document.getElementById('ivBtn5').classList.toggle('active', v===5);
+  if (R) renderTable();
 }
-
-function trajectory(td, v0, la, sl, dr, am) {
-  const dt = 0.002;
-  let x=0,y=0,vx=v0*Math.cos(la),vy=v0*Math.sin(la),a=la;
-  let ax=(-dr*Math.cos(a)/am)-9.8*Math.sin(sl), ay=(-dr*Math.sin(a)/am)-9.8*Math.cos(sl);
-  while(x<td){
-    x+=vx*dt+.5*ax*dt*dt; y+=vy*dt+.5*ay*dt*dt;
-    vx+=ax*dt; vy+=ay*dt; a=vy/vx;
-    ax=(-dr*Math.cos(a)/am)-9.8*Math.sin(sl);
-    ay=(-dr*Math.sin(a)/am)-9.8*Math.cos(sl);
-  }
-  return y-(x-td)*a;
-}
-
-function calcDrag(v, L, d, m) {
-  const rho=1.204, Lm=L/1000, dm=d/1000, A=Math.PI*dm*Lm, Re=v*Lm/1.52e-5;
-  return .5*rho*v*v*A*(0.0576/Math.pow(Re,.2)+0.0016*Lm/dm/Math.pow(Re,.4))*10/7;
-}
-
-function findAngle(dist, v0, drag, am, tol) {
-  tol=tol||.001; let a=0, s=1;
-  let dp=trajectory(dist,v0,a*Math.PI/180,0,drag,am);
-  while(dp<=0){a+=s;dp=trajectory(dist,v0,a*Math.PI/180,0,drag,am);}
-  let i=0;
-  while(Math.abs(dp)>tol&&i<80){
-    s/=2;i++;
-    while(dp>0){a-=s;dp=trajectory(dist,v0,a*Math.PI/180,0,drag,am);}
-    s/=2;i++;
-    while(dp<0){a+=s;dp=trajectory(dist,v0,a*Math.PI/180,0,drag,am);}
-  }
-  return a;
-}
-
-// At point-on distance, the arrow tip aligns with the target.
-// The launch angle at point-on gives us the baseline geometry.
-// At other distances, the required launch angle change is achieved by crawling.
-// crawl(d) = eyeTip * (tan(angle_d) - tan(angle_pointOn))
-// This comes from the geometry of the eye-tip-target triangle:
-// shifting fingers down the string rotates the arrow around the pressure point,
-// changing the effective aim by (crawl / eyeToString). We approximate
-// eyeToString as negligible relative to eyeTip (valid within ~2%).
-// The calibration crawl at a known short distance is used to find velocity,
-// exactly as the sight gap is used in the compound calculator.
 
 function crawlAtDist(d, v0, eyeTipM, anglePointOn, drag, am) {
   const a = findAngle(d, v0, drag, am, 0.001);
-  return eyeTipM * (Math.tan(anglePointOn * Math.PI/180) - Math.tan(a * Math.PI/180)) * 1000;
+  return eyeTipM * (Math.tan(anglePointOn*Math.PI/180) - Math.tan(a*Math.PI/180)) * 1000;
 }
 
-function gi(id){return parseFloat(document.getElementById(id).value);}
-
 function calculate() {
-  const eyeTipM  = gi('eyeTip') / 1000;
-  const pointOn  = gi('pointOn');
-  const aL       = gi('arrowLen');
-  const aD       = gi('arrowDiam');
-  const aG       = gi('arrowMass');
-  const d1       = gi('dist1');
-  const cr1      = gi('crawl1');
-  const errEl    = document.getElementById('err');
-  errEl.textContent = '';
-
-  const useThree = document.getElementById('useThreePoint').checked;
-  const d3bb = useThree ? gi('dist3') : null;
-  const cr3bb = useThree ? gi('crawl3') : null;
-  if([eyeTipM,pointOn,aL,aD,aG,d1,cr1].some(isNaN)){errEl.textContent='Fill in all fields.';return;}
-  if(d1>=pointOn){errEl.textContent='Calibration distance must be shorter than point-on distance.';return;}
-  if(d1<5){errEl.textContent='Minimum calibration distance is 5 m.';return;}
-
-  const am = aG / 15.432359 / 1000;
-
-  // Find velocity by matching the calculated crawl at d1 to the entered crawl.
-  // We iterate velocity until crawlAtDist(d1) = cr1.
-  // Start low — barebow archers typically shoot 25-55 m/s.
-  // Faster arrow = flatter trajectory = less launch angle at short dist = less crawl
-  // So: more crawl needed → slower arrow → start fast and slow down until crawl matches
+  const eyeTipM = gi('eyeTip')/1000;
+  const pointOn = toMetres(gi('pointOn'));
+  const aL=gi('arrowLen'), aD=gi('arrowDiam'), aG=gi('arrowMass');
+  const d1=toMetres(gi('dist1')), cr1=gi('crawl1');
+  const errEl = document.getElementById('err'); errEl.textContent = '';
+  if ([eyeTipM,pointOn,aL,aD,aG,d1,cr1].some(isNaN)) { errEl.textContent='Fill in all fields.'; return; }
+  if (d1 >= pointOn) { errEl.textContent='Calibration dist must be shorter than point-on.'; return; }
+  const am = aG/15.432359/1000;
   let v0=60, step=10, dr=calcDrag(v0,aL,aD,am);
-  let apOn = findAngle(pointOn, v0, dr, am, 0.001);
-  let calcCr = crawlAtDist(d1, v0, eyeTipM, apOn, dr, am);
-
-  // Step down until calculated crawl exceeds entered crawl
-  while(calcCr < cr1) {
-    v0 -= step;
-    if(v0 < 5){ errEl.textContent='Velocity too low — check your calibration crawl or point-on distance.'; return; }
-    dr = calcDrag(v0,aL,aD,am);
-    apOn = findAngle(pointOn, v0, dr, am, 0.001);
-    calcCr = crawlAtDist(d1, v0, eyeTipM, apOn, dr, am);
+  let apOn=findAngle(pointOn,v0,dr,am,0.001);
+  let calcCr=crawlAtDist(d1,v0,eyeTipM,apOn,dr,am);
+  while (calcCr < cr1) {
+    v0-=step;
+    if (v0<5) { errEl.textContent='Velocity too low — check calibration values.'; return; }
+    dr=calcDrag(v0,aL,aD,am); apOn=findAngle(pointOn,v0,dr,am,0.001);
+    calcCr=crawlAtDist(d1,v0,eyeTipM,apOn,dr,am);
   }
-  // Bisect to converge
   let it=0;
-  while(Math.abs(calcCr-cr1)>0.05 && it<60){
+  while (Math.abs(calcCr-cr1)>0.05 && it<60) {
     step/=2; it++;
-    while(calcCr>cr1){
-      v0+=step; dr=calcDrag(v0,aL,aD,am);
-      apOn=findAngle(pointOn,v0,dr,am,0.001);
-      calcCr=crawlAtDist(d1,v0,eyeTipM,apOn,dr,am);
-    }
+    while (calcCr>cr1) { v0+=step; dr=calcDrag(v0,aL,aD,am); apOn=findAngle(pointOn,v0,dr,am,0.001); calcCr=crawlAtDist(d1,v0,eyeTipM,apOn,dr,am); }
     step/=2; it++;
-    while(calcCr<cr1){
-      v0-=step; dr=calcDrag(v0,aL,aD,am);
-      apOn=findAngle(pointOn,v0,dr,am,0.001);
-      calcCr=crawlAtDist(d1,v0,eyeTipM,apOn,dr,am);
+    while (calcCr<cr1) { v0-=step; dr=calcDrag(v0,aL,aD,am); apOn=findAngle(pointOn,v0,dr,am,0.001); calcCr=crawlAtDist(d1,v0,eyeTipM,apOn,dr,am); }
+  }
+  const finalApOn=findAngle(pointOn,v0,dr,am,0.001);
+  const crawls=[];
+  for (let d=1; d<=pointOn; d++) crawls[d]=crawlAtDist(d,v0,eyeTipM,finalApOn,dr,am);
+
+  // Three-point refinement
+  const useThree=document.getElementById('useThreePoint').checked;
+  if (useThree) {
+    const d3=gi('dist3'), cr3=gi('crawl3');
+    if (!isNaN(d3)&&!isNaN(cr3)&&crawls[Math.round(d3)]!==undefined) {
+      const pts=[[d1,cr1],[Math.round(d3),cr3],[pointOn,0]];
+      let sumR=0;
+      pts.forEach(([d,cr])=>{
+        const a=findAngle(d,v0,dr,am,0.001);
+        const ratio=Math.tan(finalApOn*Math.PI/180)-Math.tan(a*Math.PI/180);
+        if (Math.abs(ratio)>0.0001) sumR+=(cr/1000)/ratio;
+      });
+      const eyeAdj=sumR/pts.length;
+      if (eyeAdj>0.3&&eyeAdj<2.0) for (let d=1;d<=pointOn;d++) crawls[d]=crawlAtDist(d,v0,eyeAdj,finalApOn,dr,am);
     }
   }
 
-  const crawls = [];
-  const finalApOn = findAngle(pointOn, v0, dr, am, 0.001);
-  for(let d=1; d<=pointOn; d++){
-    crawls[d] = crawlAtDist(d, v0, eyeTipM, finalApOn, dr, am);
-  }
-
-
-  // Three-point refinement for barebow
-  if(useThree && d3bb && cr3bb && !isNaN(d3bb) && !isNaN(cr3bb) && crawls[Math.round(d3bb)] !== undefined) {
-    // The crawl is directly proportional to eyeTip, so we can adjust eyeTipM
-    // to best-fit all three known points using least squares on (angle_diff vs crawl)
-    const pts = [[d1, cr1], [Math.round(d3bb), cr3bb]];
-    pts.push([pointOn, 0]);
-    let sumRatio = 0;
-    pts.forEach(([d, cr]) => {
-      const aDist = findAngle(d, v0, dr, am, 0.001);
-      const ratio = (Math.tan(finalApOn*Math.PI/180) - Math.tan(aDist*Math.PI/180));
-      if(Math.abs(ratio) > 0.0001) sumRatio += (cr/1000) / ratio;
-    });
-    const eyeTipAdj = sumRatio / pts.length;
-    if(eyeTipAdj > 0.3 && eyeTipAdj < 2.0) {
-      for(let d=1; d<=pointOn; d++){
-        crawls[d] = crawlAtDist(d, v0, eyeTipAdj, finalApOn, dr, am);
-      }
-    }
-  }
-  R = {crawls, pointOn, d1, cr1, v0, eyeTipM, aL, aD, aG};
-
+  R={crawls,pointOn,d1,cr1,v0,eyeTipM,aL,aD,aG};
+  const ul=unitLabel();
   document.getElementById('metrics').innerHTML=`
     <div class="metric"><div class="ml">Arrow speed</div><div class="mv">${v0.toFixed(1)}</div><div class="mu">m/s — ${(v0*1000/25.4/12).toFixed(0)} ft/s</div></div>
-    <div class="metric"><div class="ml">Point-on</div><div class="mv">${pointOn}</div><div class="mu">metres — zero crawl</div></div>
-    <div class="metric"><div class="ml">Max crawl (${d1} m)</div><div class="mv">${crawls[d1]?crawls[d1].toFixed(1):'—'}</div><div class="mu">mm</div></div>`;
-
-  document.getElementById('tnote').textContent =
-    `At ${pointOn} m you aim directly with the arrow tip — no crawl. Below this distance, crawl increases as distance decreases.`;
-
+    <div class="metric"><div class="ml">Point-on</div><div class="mv">${pointOn}</div><div class="mu">${ul} — zero crawl</div></div>
+    <div class="metric"><div class="ml">Max crawl</div><div class="mv">${crawls[d1]?crawls[d1].toFixed(1):'—'}</div><div class="mu">mm at ${d1} ${ul}</div></div>`;
+  document.getElementById('tnote').textContent=`At ${pointOn} ${ul} you aim with the arrow tip — no crawl. Crawl increases as distance decreases.`;
   document.getElementById('emptyState').style.display='none';
   document.getElementById('results').style.display='block';
   document.getElementById('tapeEmpty').style.display='none';
-
-  renderTable();
-  renderTape();
+  renderTable(); renderTape();
 }
 
-function getTableDists() {
-  if(!R) return [];
-  const{crawls,pointOn}=R;
+function getDists() {
+  if (!R) return [];
+  const {crawls,pointOn}=R;
   const dists=new Set();
-  if(tableInterval===1){
-    for(let d=1;d<=pointOn;d++) dists.add(d);
-  } else {
-    for(let d=5;d<=pointOn;d+=5) dists.add(d);
-  }
+  if (iv===1) { for (let d=1;d<=pointOn;d++) dists.add(d); }
+  else { for (let d=5;d<=pointOn;d+=5) dists.add(d); }
   dists.add(pointOn);
   return Array.from(dists).filter(d=>d>=1&&d<=pointOn).sort((a,b)=>a-b);
 }
 
 function renderTable() {
-  if(!R) return;
-  const{crawls,pointOn,d1}=R;
-  const tb=document.getElementById('tbody');
-  tb.innerHTML='';
-  getTableDists().forEach(d=>{
-    const cr=crawls[d];
-    if(cr===undefined) return;
+  if (!R) return;
+  const {crawls,pointOn,d1}=R;
+  const tb=document.getElementById('tbody'); tb.innerHTML='';
+  getDists().forEach(d=>{
+    const cr=crawls[d]; if (cr===undefined) return;
     const tr=document.createElement('tr');
-    const isPointOn=d===pointOn;
-    const isCalib=d===d1;
-    if(isPointOn) tr.className='pton';
-    else if(isCalib) tr.className='calib';
-    else if(cr<0) tr.className='zero';
-    const crStr=cr<0?'beyond point-on':cr.toFixed(1)+' mm';
-    const note=isPointOn?'point-on — aim with tip':isCalib?'calibration':'';
-    tr.innerHTML=`<td>${d} m</td><td>${crStr}</td><td style="color:var(--dim);font-size:10px">${note}</td>`;
+    if (d===pointOn) tr.className='pton';
+    else if (d===d1) tr.className='calib';
+    tr.innerHTML=`<td>${d} ${unitLabel()}</td><td>${cr<0?'—':cr.toFixed(1)+' mm'}</td><td style="color:var(--dim);font-size:11px">${d===pointOn?'point-on':d===d1?'calibration':''}</td>`;
     tb.appendChild(tr);
   });
 }
 
-function printTable() {
-  if(!R) return;
-  const{crawls,pointOn,d1,v0}=R;
-  const dists=getTableDists();
-  let rows='';
-  dists.forEach(d=>{
-    const cr=crawls[d];
-    if(cr===undefined) return;
-    const crStr=cr<0?'—':cr.toFixed(1);
-    const bold=(d===pointOn||d===d1)?'font-weight:600;':'';
-    rows+=`<tr style="${bold}"><td>${d} m</td><td>${crStr}${cr>=0?' mm':''}</td></tr>`;
-  });
-  const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>SightCalc Barebow</title>
-  <style>
-    body{font-family:'IBM Plex Mono',monospace;font-size:12pt;margin:15mm;color:#000;}
-    h2{font-size:14pt;margin-bottom:4px;}
-    p{font-size:9pt;color:#555;margin-bottom:12px;}
-    table{width:auto;border-collapse:collapse;min-width:200px;}
-    th{text-align:left;font-size:9pt;color:#555;padding:4px 16px 4px 0;border-bottom:1px solid #ccc;}
-    td{padding:4px 16px 4px 0;font-size:11pt;}
-    tr:nth-child(even) td{background:#f8f8f8;}
-    @page{margin:15mm;size:A4 portrait;}
-  </style></head><body>
-  <h2>SightCalc — Barebow String Walking</h2>
-  <p>Speed: ${v0.toFixed(1)} m/s &nbsp;|&nbsp; Point-on: ${pointOn} m</p>
-  <table><thead><tr><th>Distance</th><th>Crawl</th></tr></thead><tbody>${rows}</tbody></table>
-  <script>window.onload=function(){window.print();}<\/script>
-  </body></html>`);
-  w.document.close();
-}
-
 function buildSVG() {
-  if(!R) return null;
-  const{crawls,pointOn}=R;
+  if (!R) return null;
+  const {crawls,pointOn}=R;
   const iv=parseInt(document.getElementById('optInterval').value);
-
-  const PPM=3.7795;
-  // Tab tape: oriented so zero crawl (point-on) is at top, max crawl at bottom
-  // Width narrow like a real tab tape — 20mm wide
-  const WMM=22, padTop=10, padBot=14;
-
-  // Find max crawl for scaling
-  let maxCrawlMM=0;
-  for(let d=5;d<=pointOn;d+=5) if(crawls[d]&&crawls[d]>maxCrawlMM) maxCrawlMM=crawls[d];
-  maxCrawlMM=Math.ceil(maxCrawlMM/5)*5;
-
-  const HMM=maxCrawlMM+padTop+padBot;
-  const W=WMM*PPM, H=HMM*PPM;
-
-  // y position: 0 crawl at top, max crawl at bottom
-  const yOf=crawlMM=>(padTop+crawlMM)*PPM;
-
-  const spX=11*PPM;
-  const tL=5*PPM, tS=2.5*PPM;
-
+  const PPM=3.7795, WMM=22, padTop=10, padBot=14;
+  let maxCr=0;
+  for (let d=5;d<=pointOn;d+=5) if (crawls[d]&&crawls[d]>maxCr) maxCr=crawls[d];
+  maxCr=Math.ceil(maxCr/5)*5;
+  const HMM=maxCr+padTop+padBot, W=WMM*PPM, H=HMM*PPM;
+  const yOf=cr=>(padTop+cr)*PPM;
+  const spX=11*PPM, tL=5*PPM, tS=2.5*PPM;
+  const primary=new Set(), secondary=new Set();
+  for (let d=iv;d<=pointOn;d+=iv) if (crawls[d]&&crawls[d]>=0) primary.add(d);
+  if (iv===10) for (let d=5;d<=pointOn;d+=10) if (crawls[d]&&crawls[d]>=0&&!primary.has(d)) secondary.add(d);
   let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${W.toFixed(1)}" height="${H.toFixed(1)}" viewBox="0 0 ${W.toFixed(1)} ${H.toFixed(1)}">`;
   s+=`<rect width="${W}" height="${H}" fill="white"/>`;
-
-  // Spine line
   s+=`<line x1="${spX}" y1="${padTop*PPM}" x2="${spX}" y2="${(HMM-padBot)*PPM}" stroke="#222" stroke-width="0.8"/>`;
-
-  // Nocking point marker at top (zero crawl)
   s+=`<line x1="${spX-tL}" y1="${padTop*PPM}" x2="${spX+tL}" y2="${padTop*PPM}" stroke="#c00" stroke-width="1.2"/>`;
-
-  // Tick marks for each distance
-  const primary=new Set(), secondary=new Set();
-  for(let d=iv;d<=pointOn;d+=iv){
-    if(crawls[d]&&crawls[d]>=0) primary.add(d);
-  }
-  if(iv===10){
-    for(let d=5;d<=pointOn;d+=10){
-      if(crawls[d]&&crawls[d]>=0&&!primary.has(d)) secondary.add(d);
-    }
-  }
-
-  secondary.forEach(d=>{
-    const y=yOf(crawls[d]);
-    s+=`<line x1="${spX}" y1="${y}" x2="${spX+tS}" y2="${y}" stroke="#222" stroke-width="0.6"/>`;
-  });
-
-  primary.forEach(d=>{
-    const y=yOf(crawls[d]);
-    s+=`<line x1="${spX}" y1="${y}" x2="${spX+tL}" y2="${y}" stroke="#222" stroke-width="0.8"/>`;
-  });
-
-  // Calibration ruler
-  const calX=3*PPM, calTopY=H-(padBot-2)*PPM, calBotY=calTopY+30*PPM, calMidY=(calTopY+calBotY)/2;
-  s+=`<line x1="${calX}" y1="${calTopY}" x2="${calX}" y2="${calBotY}" stroke="#ccc" stroke-width="0.5"/>`;
-  s+=`<line x1="${calX-1.5*PPM}" y1="${calTopY}" x2="${calX+1.5*PPM}" y2="${calTopY}" stroke="#ccc" stroke-width="0.5"/>`;
-  s+=`<line x1="${calX-1.5*PPM}" y1="${calBotY}" x2="${calX+1.5*PPM}" y2="${calBotY}" stroke="#ccc" stroke-width="0.5"/>`;
-  s+=`<text x="${calX+2.5*PPM}" y="${calMidY+PPM}" text-anchor="start" font-size="${2.2*PPM}" font-family="'IBM Plex Mono',monospace" fill="#ccc">30</text>`;
-  s+=`<text x="${calX+2.5*PPM}" y="${calMidY+3.4*PPM}" text-anchor="start" font-size="${2.2*PPM}" font-family="'IBM Plex Mono',monospace" fill="#ccc">mm</text>`;
-
-  s+=`</svg>`;
-  return s;
+  secondary.forEach(d=>{ const y=yOf(crawls[d]); s+=`<line x1="${spX}" y1="${y}" x2="${spX+tS}" y2="${y}" stroke="#222" stroke-width="0.6"/>`; });
+  primary.forEach(d=>{ const y=yOf(crawls[d]); s+=`<line x1="${spX}" y1="${y}" x2="${spX+tL}" y2="${y}" stroke="#222" stroke-width="0.8"/>`; });
+  const calTopY=H-(padBot-2)*PPM, calBotY=calTopY+30*PPM, calMidY=(calTopY+calBotY)/2;
+  s+=`<line x1="3" y1="${calTopY}" x2="3" y2="${calBotY}" stroke="#ccc" stroke-width="0.5"/>`;
+  s+=`<line x1="1.5" y1="${calTopY}" x2="4.5" y2="${calTopY}" stroke="#ccc" stroke-width="0.5"/>`;
+  s+=`<line x1="1.5" y1="${calBotY}" x2="4.5" y2="${calBotY}" stroke="#ccc" stroke-width="0.5"/>`;
+  s+=`<text x="6" y="${calMidY+PPM}" font-size="${2.2*PPM}" font-family="'IBM Plex Mono',monospace" fill="#ccc">30</text>`;
+  s+=`<text x="6" y="${calMidY+3.4*PPM}" font-size="${2.2*PPM}" font-family="'IBM Plex Mono',monospace" fill="#ccc">mm</text>`;
+  s+=`</svg>`; return s;
 }
 
-function renderTape(){const s=buildSVG();if(!s)return;document.getElementById('tapePreview').innerHTML=s;}
+function renderTape() { const s=buildSVG(); if (!s) return; document.getElementById('tapePreview').innerHTML=s; }
+function printTape() { const s=buildSVG(); if (!s) return; const w=window.open('','_blank'); w.document.write(`<!DOCTYPE html><html><head><title>SightCalc tab tape</title><style>body{margin:0;padding:0;}svg{display:block;}@page{margin:5mm;size:A4;}</style></head><body>${s}<script>window.onload=function(){window.print();}<\/script></body></html>`); w.document.close(); }
+function dlSVG() { const s=buildSVG(); if (!s) return; downloadBlob('tab-tape.svg',s,'image/svg+xml'); }
 
-function printTape(){
-  const s=buildSVG();if(!s)return;
+function printTable() {
+  if (!R) return;
+  const {crawls,pointOn,d1,v0}=R;
+  let rows='';
+  getDists().forEach(d=>{ const cr=crawls[d]; if(cr===undefined)return; const bold=(d===pointOn||d===d1)?'font-weight:700;':''; rows+=`<tr style="${bold}"><td>${d} ${unitLabel()}</td><td>${cr<0?'—':cr.toFixed(1)+' mm'}</td></tr>`; });
   const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>SightCalc tab tape</title>
-    <style>body{margin:0;padding:0;background:white;}svg{display:block;}@page{margin:5mm;size:A4 portrait;}</style>
-    </head><body>${s}<script>window.onload=function(){window.print();}<\/script></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><title>SightCalc Barebow</title><style>body{font-family:'IBM Plex Mono',monospace;font-size:12pt;margin:15mm;}h2{font-size:14pt;margin-bottom:4px;}p{font-size:9pt;color:#666;margin-bottom:12px;}table{border-collapse:collapse;}th{text-align:left;font-size:9pt;color:#666;padding:4px 16px 4px 0;border-bottom:1px solid #ccc;}td{padding:4px 16px 4px 0;}@page{margin:15mm;size:A4;}</style></head><body><h2>SightCalc — Barebow</h2><p>Speed: ${v0.toFixed(1)} m/s | Point-on: ${pointOn} ${unitLabel()}</p><table><thead><tr><th>Distance</th><th>Crawl</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=function(){window.print();}<\/script></body></html>`);
   w.document.close();
 }
 
-function dlSVG(){
-  const s=buildSVG();if(!s)return;
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([s],{type:'image/svg+xml'}));
-  a.download='tab-tape.svg'; a.click();
+function exportCSV() {
+  if (!R) return;
+  const {crawls,pointOn}=R;
+  let c='Distance,Crawl (mm)\n';
+  for (let d=1;d<=pointOn;d++) if(crawls[d]!==undefined) c+=`${d} ${unitLabel()},${crawls[d]<0?'':crawls[d].toFixed(1)}\n`;
+  downloadBlob('crawl-settings.csv',c,'text/csv');
 }
 
-function exportCSV(){
-  if(!R)return;
-  const{crawls,pointOn}=R;
-  let c='Distance (m),Crawl (mm)\n';
-  for(let d=1;d<=pointOn;d++) c+=`${d},${crawls[d]!==undefined?(crawls[d]<0?'beyond point-on':crawls[d].toFixed(1)):''}\n`;
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'}));
-  a.download='crawl-settings.csv'; a.click();
+function loadP() { try { return JSON.parse(localStorage.getItem(PKEY)||'{}'); } catch(e) { return {}; } }
+function saveP(p) { localStorage.setItem(PKEY,JSON.stringify(p)); }
+function renderProfiles() {
+  const profiles=loadP(), el=document.getElementById('profileList'), names=Object.keys(profiles);
+  if (!names.length) { el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--dim)">No saved profiles</div>'; return; }
+  el.innerHTML=names.map(n=>`<div class="profile-item">
+    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">${n}</span>
+    <button class="bsm" onclick="loadProfile(this.dataset.n)" data-n="${n}">Load</button>
+    <button class="bsm" style="color:var(--danger);border-color:var(--danger)" onclick="confirmDelete(this,this.dataset.n,deleteProfile)" data-n="${n}" data-confirming="false">&#10005;</button>
+  </div>`).join('');
 }
+function saveProfile() {
+  const name=document.getElementById('profileName').value.trim();
+  const errEl=document.getElementById('profileErr');
+  if (!name) { errEl.textContent='Enter a name.'; return; } errEl.textContent='';
+  const profiles=loadP(), data={};
+  BB_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el) data[id]=el.value; });
+  data._unit=currentUnit; profiles[name]=data; saveP(profiles);
+  document.getElementById('profileName').value=''; renderProfiles();
+}
+function loadProfile(name) {
+  const data=loadP()[name]; if (!data) return;
+  BB_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el&&data[id]!==undefined) el.value=data[id]; });
+  if(data._unit) setUnit(data._unit);
+  calculate();
+}
+function deleteProfile(name) { const p=loadP(); delete p[name]; saveP(p); renderProfiles(); }
+function doShare() { copyURL(BB_FIELDS); }
 
-function copyURL(){
-  const ids=['eyeTip','pointOn','arrowLen','arrowDiam','arrowMass','dist1','crawl1'];
-  const p=new URLSearchParams();
-  ids.forEach(id=>p.set(id,document.getElementById(id).value));
-  const url=location.origin+location.pathname+'?'+p.toString();
-  navigator.clipboard.writeText(url).catch(()=>{});
-  const b=document.getElementById('urlBar'); b.textContent=url; b.style.display='block';
-}
-
-function loadFromURL(){
-  const p=new URLSearchParams(location.search);
-  const ids=['eyeTip','pointOn','arrowLen','arrowDiam','arrowMass','dist1','crawl1'];
-  let found=false;
-  ids.forEach(id=>{const v=p.get(id);if(v){document.getElementById(id).value=v;found=true;}});
-  if(found)calculate();
-}
-window.addEventListener('load',loadFromURL);
+window.addEventListener('load', ()=>{ if(loadFromURL(BB_FIELDS)) calculate(); renderProfiles(); setUnit(currentUnit); });
 </script>
 </body>
 </html>

@@ -1,127 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page="standard">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SightCalc</title>
+<title>SightCalc — Standard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0f0f0f; --surface: #181818; --surface2: #222222;
-    --border: #2a2a2a; --border2: #363636;
-    --accent: #5a90c8; --accent2: #7ab0e8;
-    --text: #e8e4dc; --muted: #888880; --dim: #555550;
-    --danger: #e05050; --peak: #c87830; --warn-bg: #1a1200; --warn-border: #3a2800;
-    --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
-  }
-  *, *::before, *::after { box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
-  header { border-bottom: 1px solid var(--border); padding: 0.9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-  .header-left { display: flex; align-items: center; gap: 1.5rem; }
-  h1 { font-family: var(--mono); font-size: 17px; font-weight: 500; letter-spacing: -0.02em; }
-  nav { display: flex; gap: 4px; }
-  .nav-link { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; padding: 5px 10px; border-radius: 4px; text-decoration: none; color: var(--muted); border: 1px solid transparent; transition: all 0.15s; cursor: pointer; }
-  .nav-link.active { color: var(--accent); border-color: var(--border2); background: var(--surface); }
-  .nav-link:hover:not(.active) { color: var(--text); border-color: var(--border); }
-  .header-right { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
-  .app { display: grid; grid-template-columns: 310px 1fr 240px; min-height: calc(100vh - 52px); }
-  .sidebar { border-right: 1px solid var(--border); padding: 1rem; overflow-y: auto; }
-  .output  { padding: 1rem; overflow-y: auto; border-right: 1px solid var(--border); }
-  .tape-col { padding: 1rem; background: var(--surface); overflow-y: auto; }
-  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.75rem; overflow: hidden; }
-  .ph { background: var(--surface2); padding: 6px 12px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
-  .pb { padding: 10px 12px; }
-  .fr  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .fr3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .field { display: flex; flex-direction: column; gap: 3px; }
-  label { font-size: 12px; color: var(--muted); font-family: var(--mono); font-weight: 500; }
-  input[type="number"], select { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 7px 8px; width: 100%; outline: none; -moz-appearance: textfield; }
-  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
-  input:focus, select:focus { border-color: var(--accent); }
-  select:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-calc { width: 100%; background: var(--accent); color: #0f0f0f; border: none; border-radius: 4px; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px; cursor: pointer; margin-top: 4px; transition: background 0.15s; }
-  .btn-calc:hover { background: var(--accent2); }
-  .bsm { background: transparent; border: 1px solid var(--border2); border-radius: 4px; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; padding: 6px 10px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
-  .bsm:hover { border-color: var(--accent); color: var(--accent); }
-  .err { font-family: var(--mono); font-size: 10px; color: var(--danger); min-height: 14px; margin-top: 6px; }
-  .mg { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 1rem; }
-  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
-  .ml { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
-  .mv { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--accent); line-height: 1.1; }
-  .mu { font-size: 10px; color: var(--dim); margin-top: 2px; }
-  .tn { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 6px; padding: 7px 10px; margin-bottom: 1rem; font-family: var(--mono); font-size: 10px; color: var(--peak); }
-  .tw { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-  .ttb { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-bottom: 1px solid var(--border); background: var(--surface2); gap: 8px; flex-wrap: wrap; }
-  .tt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-  .ta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .tc { overflow-y: auto; max-height: 52vh; }
-  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; }
-  thead { position: sticky; top: 0; z-index: 1; }
-  th { background: var(--surface2); color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); }
-  td { padding: 6px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
-  tr.peak  td { background: #1a1000; color: var(--peak); }
-  tr.calib td { background: #0a1520; color: #78b0e0; }
-  tr.extra td { color: var(--accent); }
-  .cp { color: #5a9a5a; } .cn { color: var(--danger); }
-  .empty { text-align: center; padding: 2.5rem 1rem; color: var(--dim); font-family: var(--mono); font-size: 11px; line-height: 2.4; }
-  .info-note { display: flex; align-items: flex-start; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; }
-  .info-icon { font-size: 14px; flex-shrink: 0; color: var(--accent); line-height: 1.4; }
-  .info-text { font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 1.5; }
-  .tape-hd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-  .tape-opts { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
-  .tape-opts label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); font-family: var(--mono); cursor: pointer; }
-  .tape-opts input[type="checkbox"] { accent-color: var(--accent); }
-
-  .switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
-  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .switch-track { position: absolute; inset: 0; background: var(--border2); border-radius: 20px; transition: background 0.2s; cursor: pointer; }
-  .switch-track::after { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #888; border-radius: 50%; transition: transform 0.2s, background 0.2s; }
-  .switch input:checked + .switch-track { background: var(--accent); }
-  .switch input:checked + .switch-track::after { transform: translateX(16px); background: #fff; }
-  .switch-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--muted); user-select: none; }
-
-  .tape-opts select { width: auto; font-size: 12px; padding: 4px 7px; }
-  .opt-row { display: flex; align-items: center; gap: 8px; }
-  .opt-row label { min-width: 60px; font-size: 12px; }
-  .tape-acts { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-  #tapePreview svg { border: 1px solid var(--border); background: #fff; border-radius: 3px; max-width: 100%; }
-  .legend { display: flex; gap: 14px; margin-top: 10px; font-family: var(--mono); font-size: 12px; color: var(--dim); flex-wrap: wrap; }
-  .li { display: flex; align-items: center; gap: 5px; }
-  .ld { width: 8px; height: 8px; border-radius: 2px; }
-  .seg-ctrl { display: flex; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
-  .seg-btn { background: transparent; border: none; border-right: 1px solid var(--border2); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 5px 11px; cursor: pointer; transition: all 0.15s; }
-  .seg-btn:last-child { border-right: none; }
-  .seg-btn.active { background: var(--accent); color: #0f0f0f; }
-  .seg-btn:hover:not(.active) { color: var(--text); background: var(--surface2); }
-  @media (max-width: 1050px) { .app { grid-template-columns: 300px 1fr; } .tape-col { display: none; } }
-  @media (max-width: 680px)  { .app { grid-template-columns: 1fr; } .sidebar { border-right: none; border-bottom: 1px solid var(--border); } .mg { grid-template-columns: repeat(2,1fr); } }
-  @media print {
-    body, .app { display: block; background: white; }
-    .sidebar, .output, header { display: none !important; }
-    .tape-col { display: block !important; padding: 0; background: white; border: none; }
-    .tape-hd, .tape-opts, .tape-acts { display: none !important; }
-    #tapePreview svg { border: none; }
-    @page { margin: 5mm; size: A4 portrait; }
-  }
-</style>
+<link rel="stylesheet" href="shared.css">
 </head>
 <body>
 
 <header>
-  <div class="header-left">
-    <h1>SightCalc</h1>
-    <nav>
-      <span class="nav-link active">Standard</span>
-      <a class="nav-link" href="barebow.html">Barebow</a>
-      <a class="nav-link" href="experimental.html">Experimental</a>
-    </nav>
-  </div>
+  <h1>SightCalc</h1>
+  <nav>
+    <span class="nav-link active">Standard</span>
+    <a class="nav-link" href="barebow.html">Barebow</a>
+    <a class="nav-link" href="experimental.html">Experimental</a>
+  </nav>
   <div class="header-right">sight setting calculator</div>
+  <button class="burger-btn" onclick="openSettings()" aria-label="Settings">
+    <span></span><span></span><span></span>
+  </button>
 </header>
+
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <div class="settings-header">
+      Settings
+      <button class="settings-close" onclick="closeSettings()">&#10005;</button>
+    </div>
+    <div class="settings-body" id="settingsBody"></div>
+  </div>
+</div>
 
 <div class="app">
   <aside class="sidebar">
@@ -146,7 +56,7 @@
         </div>
         <div class="info-note">
           <span class="info-icon">&#9432;</span>
-          <span class="info-text">Arrow mass should be at least 150 gr for reliable results.</span>
+          <span class="info-text">Min 150 gr recommended for reliable results.</span>
         </div>
       </div>
     </div>
@@ -156,7 +66,7 @@
       <div class="pb">
         <label class="switch-label" style="align-items:flex-start">
           <span class="switch" style="margin-top:2px"><input type="checkbox" id="youthBow" onchange="onYouthChange()"><span class="switch-track"></span></span>
-          <span style="font-size:12px;color:var(--text);font-family:var(--mono)">Youth / light bow<br><span style="font-size:11px;color:var(--muted)">Typically below 30 lb draw weight. Uses a lower velocity search range for more accurate results at slow arrow speeds.</span></span>
+          <span style="font-size:12px;color:var(--text);font-family:var(--mono)">Youth / light bow<br><span style="font-size:11px;color:var(--muted)">Typically below 30 lb. Uses lower velocity search range.</span></span>
         </label>
       </div>
     </div>
@@ -164,25 +74,21 @@
     <div class="panel">
       <div class="ph">Calibration</div>
       <div class="pb">
-        <div class="fr" style="align-items:start">
-          <div class="field"><label>Short dist (m)</label><input type="number" id="dist1" value="15" step="1"></div>
+        <div class="fr">
+          <div class="field"><label>Short dist (<span class="unit-label">m</span>)</label><input type="number" id="dist1" value="15" step="1"></div>
           <div class="field"><label>Short setting</label><input type="number" id="set1" value="136" step="1"></div>
         </div>
-        <div class="fr" style="align-items:start;opacity:0.35;pointer-events:none" id="midRow">
-          <div class="field"><label>Mid dist (m)</label><input type="number" id="dist3" value="35" step="5" disabled></div>
+        <div class="fr" id="midRow" style="opacity:0.35;pointer-events:none">
+          <div class="field"><label>Mid dist (<span class="unit-label">m</span>)</label><input type="number" id="dist3" value="35" step="5" disabled></div>
           <div class="field"><label>Mid setting</label><input type="number" id="set3" value="" step="1" disabled placeholder="—"></div>
         </div>
-        <div class="fr" style="align-items:start">
-          <div class="field"><label>Long dist (m)</label><input type="number" id="dist2" value="50" step="5" min="40"></div>
+        <div class="fr">
+          <div class="field"><label>Long dist (<span class="unit-label">m</span>)</label><input type="number" id="dist2" value="50" step="5" min="40"></div>
           <div class="field"><label>Long setting</label><input type="number" id="set2" value="420" step="1"></div>
         </div>
-        <div class="fr" style="align-items:start">
+        <div class="fr">
           <div class="field"><label>Threads/inch</label><input type="number" id="tpi" value="24" step="1"></div>
-          <div class="field"><label>Max dist (m)</label><input type="number" id="maxDist" value="90" step="10"></div>
-        </div>
-        <div class="info-note" style="margin-bottom:8px">
-          <span class="info-icon">&#9432;</span>
-          <span class="info-text">Long distance minimum is 40 m. Use 15 m for the short distance where possible.</span>
+          <div class="field"><label>Max dist (<span class="unit-label">m</span>)</label><input type="number" id="maxDist" value="90" step="10"></div>
         </div>
         <p style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:8px">Tenths of turns — 136 = 13.6 turns</p>
         <label class="switch-label" style="margin-bottom:8px">
@@ -193,22 +99,21 @@
         <div class="err" id="err"></div>
       </div>
     </div>
+
     <div class="panel">
       <div class="ph">Profiles</div>
       <div class="pb">
         <div id="profileList" style="margin-bottom:8px"></div>
-        <div style="display:flex;gap:6px">
-          <input type="text" id="profileName" placeholder="Profile name" style="flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:11px;padding:5px 8px;outline:none">
-          <button class="bsm" onclick="saveProfile()">Save</button>
-        </div>
-        <div class="err" id="profileErr" style="margin-top:4px"></div>
+        <div class="field" style="margin-bottom:8px"><label>Name</label><input type="text" id="profileName" placeholder="Profile name..."></div>
+        <button class="bsm" onclick="saveProfile()" style="width:100%">Save profile</button>
+        <div class="err" id="profileErr"></div>
       </div>
     </div>
 
     <div class="panel">
       <div class="ph">Share</div>
       <div class="pb">
-        <button class="bsm" onclick="copyURL()" style="width:100%">Copy settings URL</button>
+        <button class="bsm" onclick="doShare()" style="width:100%">Copy settings URL</button>
         <div id="urlBar" style="display:none;margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--dim);word-break:break-all;background:var(--bg);padding:6px 8px;border-radius:4px;border:1px solid var(--border)"></div>
       </div>
     </div>
@@ -225,8 +130,8 @@
           <span class="tt">Settings — flat ground</span>
           <div class="ta">
             <div class="seg-ctrl">
-              <button class="seg-btn active" id="ivBtn1" onclick="setTableInterval(1)">1 m</button>
-              <button class="seg-btn" id="ivBtn5" onclick="setTableInterval(5)">5 m</button>
+              <button class="seg-btn active" id="ivBtn1" onclick="setTableInterval(1)">1 <span class="unit-label">m</span></button>
+              <button class="seg-btn" id="ivBtn5" onclick="setTableInterval(5)">5 <span class="unit-label">m</span></button>
             </div>
             <button class="bsm" onclick="printTable()">Print</button>
             <button class="bsm" onclick="exportCSV()">CSV</button>
@@ -240,10 +145,9 @@
           </table>
         </div>
       </div>
-      <div class="legend" style="margin-top:10px">
+      <div class="legend">
         <div class="li"><div class="ld" style="background:#3a2800"></div> Turnover peak</div>
-        <div class="li"><div class="ld" style="background:#0e1c2c"></div> Calibration distance</div>
-        <div class="li"><div class="ld" style="background:#2a1800"></div> 18 m</div>
+        <div class="li"><div class="ld" style="background:#0e1c2c"></div> Calibration</div>
       </div>
     </div>
   </section>
@@ -286,100 +190,17 @@
   </aside>
 </div>
 
+<script src="shared.js"></script>
 <script>
-
-const PROFILE_KEY = 'sightcalc_std_profiles';
-const STD_FIELDS = ['eyeSight','eyeArrow','arrowLen','arrowDiam','arrowMass','dist1','set1','dist2','set2','tpi','maxDist'];
-
-function loadProfiles() {
-  try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}'); } catch(e) { return {}; }
-}
-function saveProfiles(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
-
-function renderProfiles() {
-  const profiles = loadProfiles();
-  const el = document.getElementById('profileList');
-  const names = Object.keys(profiles);
-  if(!names.length){ el.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--dim)">No saved profiles</div>'; return; }
-  el.innerHTML = names.map(name=>`
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-      <span style="font-family:var(--mono);font-size:11px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
-      <button class="bsm" onclick="loadProfile(this.dataset.n)" data-n="${name}">Load</button>
-      <button class="bsm del-btn" style="color:var(--danger);border-color:var(--danger)" onclick="confirmDelete(this, this.dataset.n)" data-n="${name}" data-confirming="false">&#10005;</button>
-    </div>`).join('');
-}
-
-function saveProfile() {
-  const name = document.getElementById('profileName').value.trim();
-  const errEl = document.getElementById('profileErr');
-  if(!name){ errEl.textContent='Enter a profile name.'; return; }
-  errEl.textContent='';
-  const profiles = loadProfiles();
-  const data = {};
-  STD_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el) data[id]=el.value; });
-  data['youthBow'] = document.getElementById('youthBow').checked;
-  profiles[name] = data;
-  saveProfiles(profiles);
-  document.getElementById('profileName').value='';
-  renderProfiles();
-}
-
-function loadProfile(name) {
-  const data = loadProfiles()[name];
-  if(!data) return;
-  STD_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el&&data[id]!==undefined) el.value=data[id]; });
-  if(data.youthBow!==undefined) document.getElementById('youthBow').checked=data.youthBow;
-  onYouthChange();
-  calculate();
-}
-
-
-function confirmDelete(btn, name) {
-  if (btn.dataset.confirming === 'true') {
-    deleteProfile(name);
-  } else {
-    btn.dataset.confirming = 'true';
-    btn.textContent = 'confirm?';
-    btn.style.background = 'var(--danger)';
-    btn.style.color = '#fff';
-    btn.style.borderColor = 'var(--danger)';
-    btn.style.padding = '6px 8px';
-    clearTimeout(btn._timer);
-    btn._timer = setTimeout(() => {
-      btn.dataset.confirming = 'false';
-      btn.textContent = '\u2715';
-      btn.style.background = '';
-      btn.style.color = 'var(--danger)';
-      btn.style.padding = '';
-    }, 3000);
-  }
-}
-function deleteProfile(name) {
-  const profiles = loadProfiles();
-  delete profiles[name];
-  saveProfiles(profiles);
-  renderProfiles();
-}
-
-let R = null;
-let tableInterval = 1;
+const STD_FIELDS = ['eyeSight','eyeArrow','arrowLen','arrowDiam','arrowMass','dist1','set1','dist3','set3','dist2','set2','tpi','maxDist'];
+const PKEY = 'sightcalc_std_profiles';
+let R = null, tableInterval = 1;
 
 function onYouthChange() {
-  const youth = document.getElementById('youthBow').checked;
-  const mxEl  = document.getElementById('maxDist');
-  if (youth) {
-    if (parseFloat(mxEl.value) > 60) mxEl.value = 60;
-    mxEl.max = 60;
-  } else {
-    mxEl.max = 200;
-  }
-}
-
-function setTableInterval(iv) {
-  tableInterval = iv;
-  document.getElementById('ivBtn1').classList.toggle('active', iv===1);
-  document.getElementById('ivBtn5').classList.toggle('active', iv===5);
-  if(R) renderTable();
+  const y = document.getElementById('youthBow').checked;
+  const m = document.getElementById('maxDist');
+  if (y) { if (parseFloat(m.value) > 60) m.value = 60; m.max = 60; }
+  else { m.max = 200; }
 }
 
 function onThreePointChange() {
@@ -387,356 +208,220 @@ function onThreePointChange() {
   const row = document.getElementById('midRow');
   row.style.opacity = on ? '1' : '0.35';
   row.style.pointerEvents = on ? 'auto' : 'none';
-  const inputs = row.querySelectorAll('input');
-  inputs.forEach(i => i.disabled = !on);
+  row.querySelectorAll('input').forEach(i => i.disabled = !on);
 }
 
 function onIntervalChange() {
   const iv = parseInt(document.getElementById('optInterval').value);
-  const styleEl = document.getElementById('optStyle');
-  if (iv === 1) {
-    if (styleEl.value === 'basic') styleEl.value = 'normal';
-    Array.from(styleEl.options).forEach(o => { o.disabled = (o.value === 'basic'); });
-  } else {
-    Array.from(styleEl.options).forEach(o => { o.disabled = false; });
-  }
+  const s = document.getElementById('optStyle');
+  if (iv === 1) { if (s.value === 'basic') s.value = 'normal'; Array.from(s.options).forEach(o => o.disabled = o.value === 'basic'); }
+  else { Array.from(s.options).forEach(o => o.disabled = false); }
   renderTape();
 }
 
-function trajectory(td, v0, la, sl, dr, am) {
-  const dt = 0.002;
-  let x=0,y=0,vx=v0*Math.cos(la),vy=v0*Math.sin(la),a=la;
-  let ax=(-dr*Math.cos(a)/am)-9.8*Math.sin(sl), ay=(-dr*Math.sin(a)/am)-9.8*Math.cos(sl);
-  while(x<td){
-    x+=vx*dt+.5*ax*dt*dt; y+=vy*dt+.5*ay*dt*dt;
-    vx+=ax*dt; vy+=ay*dt; a=vy/vx;
-    ax=(-dr*Math.cos(a)/am)-9.8*Math.sin(sl);
-    ay=(-dr*Math.sin(a)/am)-9.8*Math.cos(sl);
-  }
-  return y-(x-td)*a;
-}
-
-function calcDrag(v, L, d, m) {
-  const rho=1.204, Lm=L/1000, dm=d/1000, A=Math.PI*dm*Lm, Re=v*Lm/1.52e-5;
-  return .5*rho*v*v*A*(0.0576/Math.pow(Re,.2)+0.0016*Lm/dm/Math.pow(Re,.4))*10/7;
-}
-
-function findAngle(dist, v0, drag, am, tol) {
-  tol=tol||.001; let a=0, s=1;
-  let dp=trajectory(dist,v0,a*Math.PI/180,0,drag,am);
-  while(dp<=0){a+=s;dp=trajectory(dist,v0,a*Math.PI/180,0,drag,am);}
-  let i=0;
-  while(Math.abs(dp)>tol&&i<80){
-    s/=2;i++;
-    while(dp>0){a-=s;dp=trajectory(dist,v0,a*Math.PI/180,0,drag,am);}
-    s/=2;i++;
-    while(dp<0){a+=s;dp=trajectory(dist,v0,a*Math.PI/180,0,drag,am);}
-  }
-  return a;
-}
-
-function calcGap(v0, es, ea, d1, d2, dr, am) {
-  const e1=findAngle(d1,v0,dr,am,.001), e2=findAngle(d2,v0,dr,am,.005);
-  return(es*(Math.tan(e2*Math.PI/180)-Math.tan(e1*Math.PI/180))-ea*es*(d2-d1)/d1/d2)*1000;
-}
-
-function sMM(dist, v0, es, ea, dr, am) {
-  const a=findAngle(dist,v0,dr,am,.001);
-  return((ea*(dist-es)/dist)-es*Math.tan(a*Math.PI/180))*1000;
-}
-
-function gi(id){return parseFloat(document.getElementById(id).value);}
-
-function toDisplay(tenths) {
-  const turns = tenths / 10;
-  const rounded = Math.round(turns * 20) / 20;
-  return rounded.toFixed(2);
+function setTableInterval(iv) {
+  tableInterval = iv;
+  document.getElementById('ivBtn1').classList.toggle('active', iv === 1);
+  document.getElementById('ivBtn5').classList.toggle('active', iv === 5);
+  if (R) renderTable();
 }
 
 function calculate() {
   const es=gi('eyeSight')/1000, ea=gi('eyeArrow')/1000;
   const aL=gi('arrowLen'), aD=gi('arrowDiam'), aG=gi('arrowMass');
-  const d1=gi('dist1'), d2=gi('dist2'), s1=gi('set1'), s2=gi('set2');
-  const tpi=gi('tpi'), mxD=gi('maxDist');
-  const errEl=document.getElementById('err');
-  errEl.textContent='';
-  if([es,ea,aL,aD,aG,d1,d2,s1,s2,tpi,mxD].some(isNaN)){errEl.textContent='Fill in all fields.';return;}
-  if(d1>=d2){errEl.textContent='Short dist must be less than long dist.';return;}
-
-  const am=aG/15.432359/1000;
-  const sgMM=Math.abs(s2-s1)/10/tpi*25.4;
-  const isYouth=document.getElementById('youthBow').checked;
-  const useThree = document.getElementById('useThreePoint').checked;
-  const d3 = useThree ? gi('dist3') : null;
-  const s3 = useThree ? gi('set3') : null;
-
-  if(useThree && (isNaN(d3)||isNaN(s3))){ errEl.textContent='Fill in third calibration point.'; return; }
-  if(useThree && (d3<=d1||d3<=d2)){ errEl.textContent='Third distance must be greater than both calibration distances.'; return; }
-
-
-  let v0=isYouth?10:30, step=10, dr=calcDrag(v0,aL,aD,am);
-  let cg=calcGap(v0,es,ea,d1,d2,dr,am);
-  while(cg>sgMM){v0+=step;dr=calcDrag(v0,aL,aD,am);cg=calcGap(v0,es,ea,d1,d2,dr,am);}
+  const d1=toMetres(gi('dist1')), d2=toMetres(gi('dist2')), s1=gi('set1'), s2=gi('set2');
+  const tpi=gi('tpi'), mxD=toMetres(gi('maxDist'));
+  const errEl = document.getElementById('err'); errEl.textContent = '';
+  if ([es,ea,aL,aD,aG,d1,d2,s1,s2,tpi,mxD].some(isNaN)) { errEl.textContent = 'Fill in all fields.'; return; }
+  if (d1 >= d2) { errEl.textContent = 'Short dist must be less than long dist.'; return; }
+  const am = aG/15.432359/1000;
+  const sgMM = Math.abs(s2-s1)/10/tpi*25.4;
+  const isYouth = document.getElementById('youthBow').checked;
+  let v0=isYouth?10:30, step=10, dr=calcDrag(v0,aL,aD,am), cg=calcGap(v0,es,ea,d1,d2,dr,am);
+  while (cg > sgMM) { v0+=step; dr=calcDrag(v0,aL,aD,am); cg=calcGap(v0,es,ea,d1,d2,dr,am); }
   let it=0;
-  while(Math.abs(cg-sgMM)>.05&&it<50){
-    step/=2;it++;
-    while(cg<sgMM){v0-=step;dr=calcDrag(v0,aL,aD,am);cg=calcGap(v0,es,ea,d1,d2,dr,am);}
-    step/=2;it++;
-    while(cg>sgMM){v0+=step;dr=calcDrag(v0,aL,aD,am);cg=calcGap(v0,es,ea,d1,d2,dr,am);}
+  while (Math.abs(cg-sgMM) > .05 && it < 50) {
+    step/=2; it++;
+    while (cg<sgMM) { v0-=step; dr=calcDrag(v0,aL,aD,am); cg=calcGap(v0,es,ea,d1,d2,dr,am); }
+    step/=2; it++;
+    while (cg>sgMM) { v0+=step; dr=calcDrag(v0,aL,aD,am); cg=calcGap(v0,es,ea,d1,d2,dr,am); }
   }
-
   const mxC=Math.max(mxD,d2), smm=[];
-  for(let d=1;d<=mxC;d++) smm[d]=sMM(d,v0,es,ea,dr,am);
-
+  for (let d=1; d<=mxC; d++) smm[d] = sMM(d,v0,es,ea,dr,am);
   let pkMM=-Infinity, pkD=1;
-  for(let d=2;d<=Math.min(30,mxC);d++) if(smm[d]>pkMM){pkMM=smm[d];pkD=d;}
-
+  for (let d=2; d<=Math.min(30,mxC); d++) if (smm[d]>pkMM) { pkMM=smm[d]; pkD=d; }
+  const useThree = document.getElementById('useThreePoint').checked;
+  const d3=useThree?gi('dist3'):null, s3=useThree?gi('set3'):null;
   let sc=(s2-s1)/(smm[d2]-smm[d1]), of=s1-sc*smm[d1];
-
-  // Three-point refinement: adjust scale to minimise error at third point
-  if(useThree && smm[d3] !== undefined) {
-    const mmShort2=smm[d1], mmLong2=smm[d2], mmThird=smm[d3];
-    // Two-point scale
-    const sc2=(s2-s1)/(mmLong2-mmShort2), of2=s1-sc2*mmShort2;
-    // Third point predicted vs actual
-    const pred3 = sc2*mmThird+of2;
-    const err3 = s3 - pred3;
-    // Blend: weighted average of two-point scale and three-point corrected scale
-    // Use least-squares fit across all three points
-    const dists3=[d1,d2,d3], sets3=[s1,s2,s3];
-    let sumX=0,sumY=0,sumXX=0,sumXY=0,n=3;
-    dists3.forEach((d,i)=>{ const x=smm[d]; sumX+=x; sumY+=sets3[i]; sumXX+=x*x; sumXY+=x*sets3[i]; });
-    const scLS=(n*sumXY-sumX*sumY)/(n*sumXX-sumX*sumX);
-    const ofLS=(sumY-scLS*sumX)/n;
-    sc=scLS; of=ofLS;
+  if (useThree && smm[d3]) {
+    const pts=[{d:d1,s:s1},{d:d2,s:s2},{d:d3,s:s3}];
+    let sx=0,sy=0,sxx=0,sxy=0;
+    pts.forEach(p=>{const x=smm[p.d];sx+=x;sy+=p.s;sxx+=x*x;sxy+=x*p.s;});
+    const n=3, den=n*sxx-sx*sx;
+    if (Math.abs(den)>1e-10) { sc=(n*sxy-sx*sy)/den; of=(sy-sc*sx)/n; }
   }
-  const toT=mm=>sc*mm+of;
-
-  R={smm,toT,pkD,d1,d2,tpi,mxD,v0,sgMM,aL,aD,aG};
-
-  document.getElementById('metrics').innerHTML=`
+  const toT = mm => sc*mm+of;
+  R = {smm, toT, pkD, d1, d2, tpi, mxD, v0, sgMM};
+  const ul = unitLabel();
+  document.getElementById('metrics').innerHTML = `
     <div class="metric"><div class="ml">Arrow speed</div><div class="mv">${v0.toFixed(1)}</div><div class="mu">m/s — ${(v0*1000/25.4/12).toFixed(0)} ft/s</div></div>
-    <div class="metric"><div class="ml">Turnover</div><div class="mv">${pkD}</div><div class="mu">metres</div></div>
+    <div class="metric"><div class="ml">Turnover</div><div class="mv">${pkD}</div><div class="mu">${ul}</div></div>
     <div class="metric"><div class="ml">Sight gap</div><div class="mv">${sgMM.toFixed(1)}</div><div class="mu">mm</div></div>
     <div class="metric"><div class="ml">mm / turn</div><div class="mv">${(25.4/tpi).toFixed(3)}</div><div class="mu">${tpi} tpi</div></div>`;
-  document.getElementById('tnote').textContent=`▲ Turnover at ${pkD} m — highest sight position. Settings decrease for distances closer than this.`;
-
-  document.getElementById('emptyState').style.display='none';
-  document.getElementById('results').style.display='block';
-  document.getElementById('tapeEmpty').style.display='none';
-
-  renderTable();
-  renderTape();
+  document.getElementById('tnote').textContent = `▲ Turnover at ${pkD} ${ul} — highest sight position.`;
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('tapeEmpty').style.display = 'none';
+  renderTable(); renderTape();
 }
 
-function getTableRows() {
-  if(!R) return [];
-  const{smm,pkD,mxD,d1,d2}=R;
-  const rows=[];
-  const dists=new Set();
-
-  if(tableInterval===1){
-    for(let d=1;d<=mxD;d++) dists.add(d);
-  } else {
-    for(let d=tableInterval;d<=mxD;d+=tableInterval) dists.add(d);
-    dists.add(18);
-  }
-  dists.add(18);
-
-  Array.from(dists).sort((a,b)=>a-b).forEach(d=>{
-    if(smm[d]!==undefined) rows.push(d);
-  });
-  return rows;
+function getTableDists() {
+  if (!R) return [];
+  const {smm, mxD, d1, d2} = R;
+  const dists = new Set();
+  if (tableInterval===1) { for (let d=1; d<=mxD; d++) dists.add(d); }
+  else { for (let d=tableInterval; d<=mxD; d+=tableInterval) dists.add(d); dists.add(18); }
+  return Array.from(dists).sort((a,b)=>a-b).filter(d=>smm[d]!==undefined);
 }
 
 function renderTable() {
-  if(!R) return;
-  const{smm,toT,pkD,d1,d2}=R;
-  const tb=document.getElementById('tbody');
-  tb.innerHTML='';
-  const dists=getTableRows();
-  let pT=null;
-  dists.forEach(d=>{
-    const t=toT(smm[d]);
-    const ch=pT!==null?(t-pT)/10:null;
-    const chStr=ch!==null?(ch>=0?'+':'')+ch.toFixed(2):'—';
-    const chCls=ch===null?'':ch>0?'cp':'cn';
+  if (!R) return;
+  const {smm, toT, pkD, d1, d2} = R;
+  const tb = document.getElementById('tbody'); tb.innerHTML = '';
+  let pT = null;
+  getTableDists().forEach(d => {
+    const t=toT(smm[d]), ch=pT!==null?(t-pT)/10:null;
     const tr=document.createElement('tr');
-    if(d===pkD) tr.className='peak';
-    else if(d===d1||d===d2) tr.className='calib';
-    else if(d===18) tr.className='extra';
-    tr.innerHTML=`<td>${d} m${d===pkD?' ▲':''}</td><td>${toDisplay(t)}</td><td class="${chCls}">${chStr}</td><td>${smm[d].toFixed(1)}</td>`;
-    tb.appendChild(tr);
-    pT=t;
+    if (d===pkD) tr.className='peak';
+    else if (d===d1||d===d2) tr.className='calib';
+    else if (d===18) tr.className='extra';
+    tr.innerHTML = `<td>${d} ${unitLabel()}${d===pkD?' ▲':''}</td><td>${toDisplay(t)}</td><td class="${ch===null?'':ch>0?'cp':'cn'}">${ch!==null?(ch>=0?'+':'')+ch.toFixed(2):'—'}</td><td>${smm[d].toFixed(1)}</td>`;
+    tb.appendChild(tr); pT=t;
   });
-}
-
-function printTable() {
-  if(!R) return;
-  const{smm,toT,pkD,mxD,v0,tpi,d1,d2}=R;
-  const dists=getTableRows();
-  const ivLabel=tableInterval===1?'1 m intervals':'5 m intervals + 18 m';
-  let rows='';
-  dists.forEach(d=>{
-    const t=toT(smm[d]);
-    const bold=(d===d1||d===d2||d===18||d===pkD)?'font-weight:600;':'';
-    rows+=`<tr style="${bold}"><td>${d} m</td><td>${toDisplay(t)}</td></tr>`;
-  });
-  const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>SightCalc — Settings</title>
-  <style>
-    body{font-family:'IBM Plex Mono',monospace;font-size:12pt;margin:15mm;color:#000;}
-    h2{font-size:14pt;margin-bottom:4px;}
-    p{font-size:9pt;color:#555;margin-bottom:12px;}
-    table{width:auto;border-collapse:collapse;min-width:200px;}
-    th{text-align:left;font-size:9pt;color:#555;padding:4px 16px 4px 0;border-bottom:1px solid #ccc;}
-    td{padding:4px 16px 4px 0;font-size:11pt;}
-    tr:nth-child(even) td{background:#f8f8f8;}
-    @page{margin:15mm;size:A4 portrait;}
-  </style></head><body>
-  <h2>SightCalc — Sight Settings</h2>
-  <p>Speed: ${v0.toFixed(1)} m/s &nbsp;|&nbsp; ${tpi} TPI &nbsp;|&nbsp; ${ivLabel}</p>
-  <table><thead><tr><th>Distance</th><th>Setting</th></tr></thead><tbody>${rows}</tbody></table>
-  <script>window.onload=function(){window.print();}<\/script>
-  </body></html>`);
-  w.document.close();
 }
 
 function buildSVG() {
-  if(!R) return null;
-  const{smm,pkD,mxD}=R;
+  if (!R) return null;
+  const {smm, pkD, mxD} = R;
   const right=document.getElementById('optSide').value==='right';
   const style=document.getElementById('optStyle').value;
   const show18=document.getElementById('opt18').checked;
   const iv=parseInt(document.getElementById('optInterval').value);
   const showShort=document.getElementById('optShort').checked;
-
-  const PPM=3.7795;
-  const WMM=38, padTop=16, padBot=30;
-  const pkMM=smm[pkD], loMM=smm[mxD];
-  const HMM=(pkMM-loMM)+padTop+padBot;
-  const W=WMM*PPM, H=HMM*PPM;
-  const yOf=d=>(padTop+(pkMM-smm[d]))*PPM;
-
-  const spX=(right?12:26)*PPM;
-  const tL=(right?5:-5)*PPM, tM=(right?3.5:-3.5)*PPM, tS=(right?2:-2)*PPM;
+  const PPM=3.7795, WMM=38, padTop=16, padBot=30;
+  const pkMM=smm[pkD], loMM=smm[mxD], HMM=(pkMM-loMM)+padTop+padBot;
+  const W=WMM*PPM, H=HMM*PPM, yOf=d=>(padTop+(pkMM-smm[d]))*PPM;
+  const spX=(right?12:26)*PPM, tL=(right?5:-5)*PPM, tM=(right?3.5:-3.5)*PPM, tS=(right?2:-2)*PPM;
   const lbX=(right?spX+6.5*PPM:spX-6.5*PPM), anc=right?'start':'end';
   const topY=padTop*PPM, botY=(HMM-padBot)*PPM;
-
-  const calX=(right?W-5.5*PPM:5.5*PPM);
-  const calTopY=H-(padBot-4)*PPM, calBotY=calTopY+50*PPM, calMidY=(calTopY+calBotY)/2;
-
+  const calX=(right?W-5.5*PPM:5.5*PPM), calTopY=H-(padBot-4)*PPM, calBotY=calTopY+50*PPM, calMidY=(calTopY+calBotY)/2;
   const MAIN_COL='#222', COL18='#cc2200';
   const MAIN_FS=3.2*PPM, FS18=2.6*PPM;
-
   const tapeDists=new Set();
-  if(iv===1){ for(let d=pkD;d<=mxD;d++) tapeDists.add(d); }
-  else { for(let d=iv;d<=mxD;d+=iv) tapeDists.add(d); }
-  if(show18&&smm[18]) tapeDists.add(18);
-  if(showShort){ for(let d=2;d<=9;d++) if(smm[d]) tapeDists.add(d); }
-
+  if (iv===1) { for (let d=pkD; d<=mxD; d++) tapeDists.add(d); }
+  else { for (let d=iv; d<=mxD; d+=iv) tapeDists.add(d); }
+  if (show18 && smm[18]) tapeDists.add(18);
+  if (showShort) { for (let d=2; d<=9; d++) if (smm[d]) tapeDists.add(d); }
   let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${W.toFixed(1)}" height="${H.toFixed(1)}" viewBox="0 0 ${W.toFixed(1)} ${H.toFixed(1)}">`;
   s+=`<rect width="${W}" height="${H}" fill="white"/>`;
   s+=`<text x="${spX}" y="${11*PPM}" text-anchor="middle" font-size="${3.3*PPM}" font-family="'IBM Plex Mono',monospace" fill="#333">Metres</text>`;
-
-  if(style==='normal'||style==='basic'){
-    s+=`<line x1="${spX}" y1="${topY}" x2="${spX}" y2="${botY}" stroke="#333" stroke-width="0.7"/>`;
-  }
-
-  Array.from(tapeDists).sort((a,b)=>a-b).forEach(d=>{
-    if(!smm[d]) return;
-    const y=yOf(d);
-    const is18=show18&&d===18;
-    const isShort=d<10;
-    const col=is18?COL18:MAIN_COL;
-    const fs=is18?FS18:MAIN_FS;
-
-    if(style==='normal'||style==='basic'){
+  if (style==='normal'||style==='basic') s+=`<line x1="${spX}" y1="${topY}" x2="${spX}" y2="${botY}" stroke="#333" stroke-width="0.7"/>`;
+  Array.from(tapeDists).sort((a,b)=>a-b).forEach(d => {
+    if (!smm[d]) return;
+    const y=yOf(d), is18=show18&&d===18, isShort=d<10, col=is18?COL18:MAIN_COL, fs=is18?FS18:MAIN_FS;
+    if (style==='normal'||style==='basic') {
       let tk;
-      if(isShort) tk=tM;
-      else if(style==='normal'&&iv===1){
-        if(d%10===0) tk=tL; else if(d%5===0) tk=tM; else tk=tS;
-      } else {
-        tk=is18?tM:tL;
-      }
+      if (isShort) tk=tM;
+      else if (style==='normal'&&iv===1) { if (d%10===0) tk=tL; else if (d%5===0) tk=tM; else tk=tS; }
+      else tk=is18?tM:tL;
       s+=`<line x1="${spX}" y1="${y}" x2="${spX+tk}" y2="${y}" stroke="${col}" stroke-width="${is18?'0.6':'0.8'}"/>`;
-      if(!isShort){
-        const showLbl=style==='normal'?(d%10===0):true;
-        if(showLbl) s+=`<text x="${lbX}" y="${y+1.2*PPM}" text-anchor="${anc}" font-size="${fs}" font-family="'IBM Plex Mono',monospace" fill="${col}">${d/10}</text>`;
-      } else {
-        const ox=right?tM+PPM:tM-PPM;
-        s+=`<text x="${spX+ox}" y="${y+PPM}" text-anchor="${anc}" font-size="${2.3*PPM}" font-family="'IBM Plex Mono',monospace" fill="#888">${d}</text>`;
-      }
+      if (!isShort) { const showLbl=style==='normal'?(d%10===0):true; if (showLbl) s+=`<text x="${lbX}" y="${y+1.2*PPM}" text-anchor="${anc}" font-size="${fs}" font-family="'IBM Plex Mono',monospace" fill="${col}">${d/10}</text>`; }
+      else { const ox=right?tM+PPM:tM-PPM; s+=`<text x="${spX+ox}" y="${y+PPM}" text-anchor="${anc}" font-size="${2.3*PPM}" font-family="'IBM Plex Mono',monospace" fill="#888">${d}</text>`; }
     }
-
-    if(style==='caveman'){
-      const lbl=isShort?String(d):String(d);
-      s+=`<text x="${lbX}" y="${y+fs/2}" text-anchor="${anc}" font-size="${fs}" font-family="'IBM Plex Mono',monospace" font-weight="500" fill="${col}">${lbl}</text>`;
-    }
+    if (style==='caveman') s+=`<text x="${lbX}" y="${y+fs/2}" text-anchor="${anc}" font-size="${fs}" font-family="'IBM Plex Mono',monospace" font-weight="500" fill="${col}">${d}</text>`;
   });
-
   s+=`<line x1="${calX}" y1="${calTopY}" x2="${calX}" y2="${calBotY}" stroke="#ccc" stroke-width="0.6"/>`;
   s+=`<line x1="${calX-1.5*PPM}" y1="${calTopY}" x2="${calX+1.5*PPM}" y2="${calTopY}" stroke="#ccc" stroke-width="0.6"/>`;
   s+=`<line x1="${calX-1.5*PPM}" y1="${calBotY}" x2="${calX+1.5*PPM}" y2="${calBotY}" stroke="#ccc" stroke-width="0.6"/>`;
   s+=`<text x="${calX+2.5*PPM}" y="${calMidY+PPM}" text-anchor="start" font-size="${2.2*PPM}" font-family="'IBM Plex Mono',monospace" fill="#ccc">50</text>`;
   s+=`<text x="${calX+2.5*PPM}" y="${calMidY+3.4*PPM}" text-anchor="start" font-size="${2.2*PPM}" font-family="'IBM Plex Mono',monospace" fill="#ccc">mm</text>`;
-  s+=`</svg>`;
-  return s;
+  s+=`</svg>`; return s;
 }
 
-function renderTape(){const s=buildSVG();if(!s)return;document.getElementById('tapePreview').innerHTML=s;}
+function renderTape() { const s=buildSVG(); if (!s) return; document.getElementById('tapePreview').innerHTML=s; }
+function printTape() { const s=buildSVG(); if (!s) return; const w=window.open('','_blank'); w.document.write(`<!DOCTYPE html><html><head><title>SightCalc tape</title><style>body{margin:0;padding:0;}svg{display:block;}@page{margin:5mm;size:A4;}</style></head><body>${s}<script>window.onload=function(){window.print();}<\/script></body></html>`); w.document.close(); }
+function dlSVG() { const s=buildSVG(); if (!s) return; downloadBlob('sight-tape.svg', s, 'image/svg+xml'); }
 
-function printTape(){
-  const s=buildSVG();if(!s)return;
+function printTable() {
+  if (!R) return;
+  const {smm, toT, mxD, v0, tpi} = R;
+  let rows='';
+  getTableDists().forEach(d => { if (!smm[d]) return; const bold=(d===R.d1||d===R.d2||d===18||d===R.pkD)?'font-weight:700;':''; rows+=`<tr style="${bold}"><td>${d} ${unitLabel()}</td><td>${toDisplay(toT(smm[d]))}</td></tr>`; });
   const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>SightCalc tape</title>
-    <style>body{margin:0;padding:0;background:white;}svg{display:block;}@page{margin:5mm;size:A4 portrait;}</style>
-    </head><body>${s}<script>window.onload=function(){window.print();}<\/script></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><title>SightCalc</title><style>body{font-family:'IBM Plex Mono',monospace;font-size:12pt;margin:15mm;}h2{font-size:14pt;margin-bottom:4px;}p{font-size:9pt;color:#666;margin-bottom:12px;}table{border-collapse:collapse;min-width:200px;}th{text-align:left;font-size:9pt;color:#666;padding:4px 16px 4px 0;border-bottom:1px solid #ccc;}td{padding:4px 16px 4px 0;}tr:nth-child(even) td{background:#f8f8f8;}@page{margin:15mm;size:A4;}</style></head><body><h2>SightCalc — Sight Settings</h2><p>Speed: ${v0.toFixed(1)} m/s | ${tpi} TPI</p><table><thead><tr><th>Distance</th><th>Setting</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=function(){window.print();}<\/script></body></html>`);
   w.document.close();
 }
 
-function dlSVG(){
-  const s=buildSVG();if(!s)return;
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([s],{type:'image/svg+xml'}));
-  a.download='sight-tape.svg'; a.click();
+function exportCSV() {
+  if (!R) return;
+  const {smm, toT, mxD} = R;
+  let c='Distance,Setting,mm\n';
+  for (let d=1; d<=mxD; d++) if (smm[d]) c+=`${d} ${unitLabel()},${toDisplay(toT(smm[d]))},${smm[d].toFixed(2)}\n`;
+  downloadBlob('sight-settings.csv', c, 'text/csv');
 }
 
-function exportCSV(){
-  if(!R)return;
-  const{smm,toT,mxD}=R;
-  let c='Distance (m),Setting,mm\n';
-  for(let d=1;d<=mxD;d++) c+=`${d},${toDisplay(toT(smm[d]))},${smm[d].toFixed(2)}\n`;
-  dl('sight-settings.csv',c,'text/csv');
-}
-
-function exportTXT(){
-  if(!R)return;
-  const{smm,toT,mxD,v0,tpi}=R;
+function exportTXT() {
+  if (!R) return;
+  const {smm, toT, mxD, v0, tpi} = R;
   let t=`SightCalc\n${'='.repeat(28)}\nSpeed: ${v0.toFixed(1)} m/s  TPI: ${tpi}\n${'-'.repeat(28)}\nDist   Setting    mm\n${'-'.repeat(28)}\n`;
-  for(let d=1;d<=mxD;d++) t+=`${String(d).padStart(4)} m  ${toDisplay(toT(smm[d])).padStart(6)}  ${smm[d].toFixed(1).padStart(7)}\n`;
-  dl('sight-settings.txt',t,'text/plain');
+  for (let d=1; d<=mxD; d++) if (smm[d]) t+=`${String(d).padStart(4)} ${unitLabel()}  ${toDisplay(toT(smm[d])).padStart(6)}  ${smm[d].toFixed(1).padStart(7)}\n`;
+  downloadBlob('sight-settings.txt', t, 'text/plain');
 }
 
-function dl(fn,c,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:m}));a.download=fn;a.click();}
+/* ── Profiles ── */
+function loadP() { try { return JSON.parse(localStorage.getItem(PKEY)||'{}'); } catch(e) { return {}; } }
+function saveP(p) { localStorage.setItem(PKEY, JSON.stringify(p)); }
 
-function copyURL(){
-  const ids=['eyeSight','eyeArrow','arrowLen','arrowDiam','arrowMass','dist1','set1','dist2','set2','tpi','maxDist'];
-  const p=new URLSearchParams();
-  ids.forEach(id=>p.set(id,document.getElementById(id).value));
-  const url=location.origin+location.pathname+'?'+p.toString();
-  navigator.clipboard.writeText(url).catch(()=>{});
-  const b=document.getElementById('urlBar'); b.textContent=url; b.style.display='block';
+function renderProfiles() {
+  const profiles=loadP(), el=document.getElementById('profileList'), names=Object.keys(profiles);
+  if (!names.length) { el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--dim)">No saved profiles</div>'; return; }
+  el.innerHTML = names.map(n=>`<div class="profile-item">
+    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">${n}</span>
+    <button class="bsm" onclick="loadProfile(this.dataset.n)" data-n="${n}">Load</button>
+    <button class="bsm" style="color:var(--danger);border-color:var(--danger)" onclick="confirmDelete(this,this.dataset.n,deleteProfile)" data-n="${n}" data-confirming="false">&#10005;</button>
+  </div>`).join('');
 }
 
-function loadFromURL(){
-  const p=new URLSearchParams(location.search);
-  const ids=['eyeSight','eyeArrow','arrowLen','arrowDiam','arrowMass','dist1','set1','dist2','set2','tpi','maxDist'];
-  let found=false;
-  ids.forEach(id=>{const v=p.get(id);if(v){document.getElementById(id).value=v;found=true;}});
-  if(found)calculate();
+function saveProfile() {
+  const name=document.getElementById('profileName').value.trim();
+  const errEl=document.getElementById('profileErr');
+  if (!name) { errEl.textContent='Enter a name.'; return; }
+  errEl.textContent='';
+  const profiles=loadP(), data={};
+  STD_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el) data[id]=el.value; });
+  data.youthBow=document.getElementById('youthBow').checked;
+  data._unit=currentUnit;
+  profiles[name]=data; saveP(profiles);
+  document.getElementById('profileName').value=''; renderProfiles();
 }
-window.addEventListener('load',loadFromURL);
+
+function loadProfile(name) {
+  const data=loadP()[name]; if (!data) return;
+  STD_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el&&data[id]!==undefined) el.value=data[id]; });
+  if (data.youthBow!==undefined) document.getElementById('youthBow').checked=data.youthBow;
+  if (data._unit) setUnit(data._unit);
+  onYouthChange(); calculate();
+}
+
+function deleteProfile(name) { const p=loadP(); delete p[name]; saveP(p); renderProfiles(); }
+
+function doShare() { copyURL(STD_FIELDS); }
+
+window.addEventListener('load', () => {
+  if (loadFromURL(STD_FIELDS)) calculate();
+  renderProfiles();
+  setUnit(currentUnit);
+});
 </script>
 </body>
 </html>
