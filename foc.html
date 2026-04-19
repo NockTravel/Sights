@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en" data-page="foc">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SightCalc — Arrow FOC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .foc-app { max-width: 860px; margin: 0 auto; padding: 1.25rem; }
+  .foc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 8px; }
+  .foc-grid.two { grid-template-columns: 1fr 1fr; }
+  .foc-grid.four { grid-template-columns: repeat(4,1fr); }
+  .foc-section { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 1.25rem 0 0.5rem; padding-bottom: 4px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .foc-section::after { content:''; flex:1; height:1px; background:var(--border); }
+  .foc-field { display: flex; flex-direction: column; gap: 3px; }
+  .foc-field label { font-size: 11px; color: var(--muted); font-family: var(--mono); font-weight: 500; }
+  .foc-field .unit-hint { font-size: 10px; color: var(--dim); margin-top: 1px; }
+  .foc-metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--br, 6px); padding: 10px 14px; }
+  .foc-metric-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .foc-metric-value { font-family: var(--mono); font-size: 20px; font-weight: 500; color: var(--accent); line-height: 1.1; }
+  .foc-metric-unit { font-size: 11px; color: var(--dim); }
+  .foc-divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+  .foc-bar-wrap { margin: 0.75rem 0; }
+  .foc-bar-label { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .foc-track { position: relative; height: 14px; border-radius: 7px; margin-bottom: 4px; }
+  .foc-marker { position: absolute; top: 50%; width: 3px; height: 20px; background: var(--text); border-radius: 2px; transform: translate(-50%,-50%); transition: left 0.3s; }
+  .foc-scale { display: flex; justify-content: space-between; font-size: 10px; color: var(--dim); padding: 0 2px; margin-bottom: 6px; font-family: var(--mono); }
+  .foc-legend { display: flex; gap: 14px; font-family: var(--mono); font-size: 10px; color: var(--muted); flex-wrap: wrap; }
+  .foc-legend-item { display: flex; align-items: center; gap: 5px; }
+  .foc-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dimmed { opacity: 0.3; pointer-events: none; }
+  .dist-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; margin-top: 0.5rem; }
+  .dist-table th { font-size: 10px; font-weight: 500; color: var(--muted); text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--border); letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface2); }
+  .dist-table th:first-child { text-align: left; }
+  .dist-table td { padding: 5px 10px; color: var(--text); border-bottom: 1px solid var(--border); text-align: right; }
+  .dist-table td:first-child { text-align: left; color: var(--muted); }
+  .dist-table tr:last-child td { border-bottom: none; }
+  .dist-table tr:hover td { background: var(--surface2); }
+  .unit-toggle { display: flex; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; margin-bottom: 1rem; width: fit-content; }
+  .unit-toggle button { background: none; border: none; border-right: 1px solid var(--border2); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 5px 12px; cursor: pointer; transition: all 0.15s; }
+  .unit-toggle button:last-child { border-right: none; }
+  .unit-toggle button.active { background: var(--accent); color: var(--btn-calc-color, #0f0f0f); }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .checkbox-row input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; }
+  .checkbox-row label { font-family: var(--mono); font-size: 12px; color: var(--muted); cursor: pointer; }
+  @media (max-width: 600px) {
+    .foc-grid { grid-template-columns: 1fr 1fr; }
+    .foc-grid.four { grid-template-columns: 1fr 1fr; }
+    .dist-table { font-size: 10px; }
+    .dist-table th, .dist-table td { padding: 4px 6px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SightCalc</h1>
+  <nav>
+    <a class="nav-link" href="index.html">Standard</a>
+    <a class="nav-link" href="barebow.html">Barebow</a>
+    <a class="nav-link" href="experimental.html">Experimental</a>
+    <span class="nav-link active">FOC</span>
+  </nav>
+  <div class="header-right">arrow foc calculator</div>
+  <button class="burger-btn" onclick="openSettings()" aria-label="Settings">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <div class="settings-header">
+      Settings
+      <button class="settings-close" onclick="closeSettings()">&#10005;</button>
+    </div>
+    <div class="settings-body" id="settingsBody"></div>
+  </div>
+</div>
+
+<div class="foc-app">
+
+  <div class="unit-toggle">
+    <button id="uIn" class="active" onclick="setLenUnit('in')">Inches</button>
+    <button id="uMm" onclick="setLenUnit('mm')">mm</button>
+  </div>
+
+  <div class="foc-section">Use case</div>
+  <div class="foc-grid two">
+    <div class="foc-field"><label>Arrow use</label>
+      <select id="use-case" onchange="calc()">
+        <option value="outdoor">Outdoor / target</option>
+        <option value="indoor">Indoor / 3D</option>
+        <option value="hunting">Hunting</option>
+        <option value="youth">Youth / slow bow</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="foc-section">Shaft</div>
+  <div class="foc-grid">
+    <div class="foc-field"><label>Shaft type</label>
+      <select id="shaft-type" onchange="onShaftChange()">
+        <option value="standard">Standard (parallel)</option>
+        <option value="x10">X10 / 3.2mm</option>
+        <option value="tapered">Tapered / weight-forward</option>
+      </select>
+    </div>
+    <div class="foc-field"><label>Shaft GPI</label><input type="number" id="gpi" value="8.8" min="0" step="0.1" oninput="calc()"><div class="unit-hint">grains per inch</div></div>
+    <div class="foc-field"><label>Shaft length</label><input type="number" id="length" value="29" min="1" step="0.25" oninput="calc()"><div class="unit-hint" id="len-hint">inches</div></div>
+  </div>
+
+  <div class="foc-section">Nock &amp; bushing</div>
+  <div class="foc-grid">
+    <div class="foc-field"><label>Insert / bushing type</label>
+      <select id="insert-type" onchange="onInsertChange()">
+        <option value="none">None</option>
+        <option value="pin">Pin nock</option>
+        <option value="4mm" selected>4mm bushing</option>
+        <option value="indoor">Indoor bushing</option>
+      </select>
+    </div>
+    <div class="foc-field"><label>Nock weight (gr)</label><input type="number" id="nock" value="6" min="0" oninput="calc()"></div>
+    <div class="foc-field" id="bushing-field"><label>Bushing weight (gr)</label><input type="number" id="bushing" value="8" min="0" oninput="calc()"></div>
+  </div>
+  <div class="checkbox-row">
+    <input type="checkbox" id="has-collar" onchange="onCollarChange()">
+    <label for="has-collar">Collar fitted</label>
+  </div>
+  <div class="foc-grid two" id="collar-row" style="display:none">
+    <div class="foc-field"><label>Collar weight (gr)</label><input type="number" id="collar" value="0" min="0" oninput="calc()"></div>
+  </div>
+
+  <div class="foc-section">Point</div>
+  <div class="foc-grid">
+    <div class="foc-field"><label>Point type</label>
+      <select id="point-type" onchange="onPointChange()">
+        <option value="gluein">Glue-in</option>
+        <option value="screwfield">Screw-in field point</option>
+        <option value="broadhead">Screw-in broadhead</option>
+        <option value="halfout">Half-out insert</option>
+      </select>
+    </div>
+    <div class="foc-field"><label>Point weight (gr)</label><input type="number" id="point" value="120" min="0" oninput="calc()"></div>
+    <div class="foc-field" id="insert-weight-field" style="display:none"><label>Insert weight (gr)</label><input type="number" id="insert" value="0" min="0" oninput="calc()"></div>
+  </div>
+
+  <div class="foc-section">Fletching</div>
+  <div class="foc-grid">
+    <div class="foc-field"><label>Single vane weight (gr)</label><input type="number" id="vane" value="1.2" min="0" step="0.1" oninput="calc()"></div>
+    <div class="foc-field"><label>Vane length</label><input type="number" id="vanelen" value="2" min="0" step="0.25" oninput="calc()"><div class="unit-hint" id="vane-len-hint">inches</div></div>
+    <div class="foc-field"><label>Number of vanes</label><input type="number" id="vanecount" value="3" min="0" max="12" oninput="calc()"></div>
+  </div>
+
+  <div class="foc-divider"></div>
+
+  <div class="foc-grid">
+    <div class="foc-metric"><div class="foc-metric-label">Total weight</div><div class="foc-metric-value"><span id="out-weight">—</span><span class="foc-metric-unit"> gr</span></div></div>
+    <div class="foc-metric"><div class="foc-metric-label">Balance point</div><div class="foc-metric-value"><span id="out-bp">—</span><span class="foc-metric-unit" id="bp-unit"> "</span></div></div>
+    <div class="foc-metric"><div class="foc-metric-label">FOC</div><div class="foc-metric-value"><span id="out-foc">—</span><span class="foc-metric-unit"> %</span></div></div>
+  </div>
+
+  <div class="foc-bar-wrap">
+    <div class="foc-bar-label"><span>FOC</span><span id="foc-status-label" style="color:var(--accent)"></span></div>
+    <div class="foc-track" id="foc-track"><div class="foc-marker" id="foc-marker" style="left:50%"></div></div>
+    <div class="foc-scale" id="foc-scale"></div>
+    <div class="foc-legend">
+      <div class="foc-legend-item"><div class="foc-dot" style="background:#5db85d"></div><span id="label-optimal">9–13% optimal</span></div>
+      <div class="foc-legend-item"><div class="foc-dot" style="background:#c8c84a"></div>acceptable</div>
+      <div class="foc-legend-item"><div class="foc-dot" style="background:#e05555"></div>out of range</div>
+    </div>
+  </div>
+
+  <div class="foc-divider"></div>
+
+  <div class="foc-section">Velocity, kinetic energy &amp; penetration</div>
+  <div class="foc-grid">
+    <div class="foc-field"><label>Velocity (fps)</label><input type="number" id="vel-fps" placeholder="e.g. 240" min="0" step="1" oninput="onFps()"><div class="unit-hint">feet per second</div></div>
+    <div class="foc-field"><label>Velocity (m/s)</label><input type="number" id="vel-ms" placeholder="e.g. 73" min="0" step="0.1" oninput="onMs()"><div class="unit-hint">metres per second</div></div>
+    <div class="foc-field"><label>Outer diameter (mm)</label><input type="number" id="diameter" value="6.2" min="1" step="0.1" oninput="calcKE()"></div>
+  </div>
+
+  <div id="ke-section" class="dimmed">
+    <div class="foc-grid four">
+      <div class="foc-metric"><div class="foc-metric-label">KE</div><div class="foc-metric-value"><span id="out-ke-ftlb">—</span><span class="foc-metric-unit"> ft·lb</span></div></div>
+      <div class="foc-metric"><div class="foc-metric-label">KE</div><div class="foc-metric-value"><span id="out-ke-j">—</span><span class="foc-metric-unit"> J</span></div></div>
+      <div class="foc-metric"><div class="foc-metric-label">Momentum</div><div class="foc-metric-value"><span id="out-mom">—</span><span class="foc-metric-unit"> slug·ft/s</span></div></div>
+      <div class="foc-metric"><div class="foc-metric-label">Pen. factor</div><div class="foc-metric-value"><span id="out-pf">—</span></div></div>
+    </div>
+    <div class="foc-section">Downrange velocity</div>
+    <div class="tw">
+      <table class="dist-table">
+        <thead><tr>
+          <th>Distance</th><th style="text-align:right">Speed (m/s)</th><th style="text-align:right">Speed (fps)</th><th style="text-align:right">KE (J)</th><th style="text-align:right">Momentum</th><th style="text-align:right">Pen. factor</th>
+        </tr></thead>
+        <tbody id="dist-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- end foc-app -->
+
+<script src="shared.js"></script>
+<script>
+const NT_MAP = {none:0.30,pin:0.45,'4mm':0.55,indoor:0.65};
+const USE_ZONES = {
+  outdoor:{low:9,high:13,max:25,label:'9–13% optimal'},
+  indoor:{low:11,high:16,max:25,label:'11–16% optimal'},
+  hunting:{low:15,high:25,max:35,label:'15–25% optimal'},
+  youth:{low:12,high:17,max:25,label:'12–17% optimal'},
+};
+const DISTANCES_M = [10,18,30,50,60,70,90];
+let currentTotal = 0, updatingVel = false, lenUnit = 'in';
+
+function setLenUnit(u) {
+  lenUnit = u;
+  document.getElementById('uIn').classList.toggle('active', u==='in');
+  document.getElementById('uMm').classList.toggle('active', u==='mm');
+  // Convert current values
+  const len = parseFloat(document.getElementById('length').value) || 0;
+  const vl  = parseFloat(document.getElementById('vanelen').value) || 0;
+  if (u === 'mm') {
+    document.getElementById('length').value  = (len * 25.4).toFixed(1);
+    document.getElementById('vanelen').value = (vl  * 25.4).toFixed(1);
+    document.getElementById('length').step   = '1';
+    document.getElementById('vanelen').step  = '1';
+    document.getElementById('len-hint').textContent = 'mm';
+    document.getElementById('vane-len-hint').textContent = 'mm';
+  } else {
+    document.getElementById('length').value  = (len / 25.4).toFixed(2);
+    document.getElementById('vanelen').value = (vl  / 25.4).toFixed(2);
+    document.getElementById('length').step   = '0.25';
+    document.getElementById('vanelen').step  = '0.25';
+    document.getElementById('len-hint').textContent = 'inches';
+    document.getElementById('vane-len-hint').textContent = 'inches';
+  }
+  document.getElementById('bp-unit').textContent = u === 'in' ? ' "' : ' mm';
+  calc();
+}
+
+function getLenIn() {
+  const v = parseFloat(document.getElementById('length').value) || 0;
+  return lenUnit === 'mm' ? v / 25.4 : v;
+}
+
+function getVaneLenIn() {
+  const v = parseFloat(document.getElementById('vanelen').value) || 0;
+  return lenUnit === 'mm' ? v / 25.4 : v;
+}
+
+function buildGradient(low,high,max) {
+  const l=low/max*100, h=high/max*100;
+  return `linear-gradient(to right,#e05555 0%,#e08855 ${Math.max(0,l-8)}%,#c8c84a ${Math.max(0,l-2)}%,#5db85d ${l}%,#5db85d ${h}%,#c8c84a ${Math.min(100,h+2)}%,#e08855 ${Math.min(100,h+8)}%,#e05555 100%)`;
+}
+
+function updateZone() {
+  const zone = USE_ZONES[document.getElementById('use-case').value];
+  document.getElementById('foc-track').style.background = buildGradient(zone.low, zone.high, zone.max);
+  document.getElementById('label-optimal').textContent = zone.label;
+  const steps = [];
+  for (let i=0; i<=6; i++) steps.push(Math.round(zone.max/6*i)+'%');
+  document.getElementById('foc-scale').innerHTML = steps.map(s=>`<span>${s}</span>`).join('');
+  return zone;
+}
+
+function dragAccel(v, L_m, d_m, mass_kg) {
+  const Re = v*L_m/1.52e-5;
+  const Cf = 0.0016*(L_m/d_m)/Math.pow(Re,0.4);
+  const Cd = 0.0576/Math.pow(Re,0.2)+Cf;
+  return 0.5*1.225*v*v*(Math.PI*d_m*L_m)*Cd*(10/7)/mass_kg;
+}
+
+function velAtDist(v0, dist, L_m, d_m, mass_kg) {
+  const steps = Math.max(50, Math.ceil(dist*20));
+  const dx = dist/steps;
+  let v = v0;
+  for (let i=0; i<steps; i++) {
+    const t = dx/v;
+    v = Math.max(0, v - dragAccel(v,L_m,d_m,mass_kg)*t);
+  }
+  return v;
+}
+
+function penFactor(mom_si, d_m) {
+  return (mom_si/(Math.PI*Math.pow(d_m/2,2))).toFixed(1);
+}
+
+function calcDownrange(v0_ms, total_gr, L_in, d_mm) {
+  const L_m=L_in*0.0254, d_m=d_mm/1000, mass_kg=total_gr*0.0000647989;
+  const tbody = document.getElementById('dist-tbody');
+  tbody.innerHTML = '';
+  DISTANCES_M.forEach(dist => {
+    const v = velAtDist(v0_ms, dist, L_m, d_m, mass_kg);
+    const ke_j = 0.5*mass_kg*v*v;
+    const mom = mass_kg*v;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${dist} m / ${Math.round(dist*1.09361)} yd</td><td>${v.toFixed(1)}</td><td>${(v/0.3048).toFixed(1)}</td><td>${ke_j.toFixed(1)}</td><td>${mom.toFixed(4)}</td><td>${penFactor(mom,d_m)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function calcKE() {
+  const fps = +document.getElementById('vel-fps').value;
+  const d_mm = +document.getElementById('diameter').value || 6.2;
+  const L_in = getLenIn();
+  const sec = document.getElementById('ke-section');
+  if (!fps || !currentTotal) { sec.classList.add('dimmed'); return; }
+  const mass_kg = currentTotal*0.0000647989;
+  const v_ms = fps*0.3048;
+  const ke_ftlb = (currentTotal*fps*fps)/450240;
+  const mom_si = mass_kg*v_ms;
+  const mom_slug = (currentTotal/7000)/32.174*fps;
+  document.getElementById('out-ke-ftlb').textContent = ke_ftlb.toFixed(1);
+  document.getElementById('out-ke-j').textContent = (ke_ftlb*1.35582).toFixed(1);
+  document.getElementById('out-mom').textContent = mom_slug.toFixed(4);
+  document.getElementById('out-pf').textContent = penFactor(mom_si, d_mm/1000);
+  sec.classList.remove('dimmed');
+  calcDownrange(v_ms, currentTotal, L_in, d_mm);
+}
+
+function onFps() {
+  if (updatingVel) return; updatingVel=true;
+  const fps = +document.getElementById('vel-fps').value;
+  document.getElementById('vel-ms').value = fps ? (fps*0.3048).toFixed(1) : '';
+  updatingVel=false; calcKE();
+}
+function onMs() {
+  if (updatingVel) return; updatingVel=true;
+  const ms = +document.getElementById('vel-ms').value;
+  document.getElementById('vel-fps').value = ms ? (ms/0.3048).toFixed(1) : '';
+  updatingVel=false; calcKE();
+}
+
+function onShaftChange() {
+  const isX10 = document.getElementById('shaft-type').value === 'x10';
+  const ptSel = document.getElementById('point-type');
+  ptSel.disabled = isX10;
+  if (isX10) ptSel.value = 'gluein';
+  document.getElementById('insert-weight-field').style.display = 'none';
+  document.getElementById('insert').value = 0;
+  calc();
+}
+
+function onInsertChange() {
+  const v = document.getElementById('insert-type').value;
+  document.getElementById('bushing-field').style.display = v==='none' ? 'none' : '';
+  calc();
+}
+
+function onPointChange() {
+  const needs = ['screwfield','broadhead','halfout'].includes(document.getElementById('point-type').value);
+  document.getElementById('insert-weight-field').style.display = needs ? '' : 'none';
+  if (!needs) document.getElementById('insert').value = 0;
+  calc();
+}
+
+function onCollarChange() {
+  document.getElementById('collar-row').style.display = document.getElementById('has-collar').checked ? '' : 'none';
+  calc();
+}
+
+function calc() {
+  const L = getLenIn();
+  const vl = getVaneLenIn();
+  const gpi = +document.getElementById('gpi').value || 0;
+  const shaftType = document.getElementById('shaft-type').value;
+  const insertType = document.getElementById('insert-type').value;
+  const pointType = document.getElementById('point-type').value;
+  const nock = +document.getElementById('nock').value || 0;
+  const bushing = insertType!=='none' ? (+document.getElementById('bushing').value||0) : 0;
+  const collar = document.getElementById('has-collar').checked ? (+document.getElementById('collar').value||0) : 0;
+  const point = +document.getElementById('point').value || 0;
+  const insert = ['screwfield','broadhead','halfout'].includes(pointType) ? (+document.getElementById('insert').value||0) : 0;
+  const vane = +document.getElementById('vane').value || 0;
+  const vcount = +document.getElementById('vanecount').value || 0;
+
+  const zone = updateZone();
+  const NT = NT_MAP[insertType];
+  const shaftW = gpi*L, vaneW = vane*vcount;
+
+  let shaftPos = NT + L/2;
+  if (shaftType==='tapered') shaftPos += L*0.1167;
+
+  const nockPos = insertType==='indoor' ? 0.225 : NT;
+  const vanePos = (NT+1.0)+vl*0.30;
+
+  let pointW1=point, pointPos1=L, pointW2=0, pointPos2=0, insertW=0, insertPos=0;
+  if (shaftType==='x10') {
+    pointW1=point*0.40; pointPos1=L; pointW2=point*0.60; pointPos2=L-0.4;
+  } else if (pointType==='screwfield') {
+    insertW=insert; insertPos=L-0.3; pointPos1=L+0.2;
+  } else if (pointType==='broadhead') {
+    insertW=insert; insertPos=L-0.3; pointPos1=L+0.5;
+  } else if (pointType==='halfout') {
+    insertW=insert; insertPos=L+0.5; pointPos1=L+0.7;
+  }
+
+  const total = shaftW+vaneW+nock+bushing+collar+point+insert;
+  currentTotal = total;
+
+  const num = nock*nockPos+bushing*0+collar*0.25+shaftW*shaftPos+vaneW*vanePos+pointW1*pointPos1+pointW2*pointPos2+insertW*insertPos;
+  const bp = total>0 ? num/total : 0;
+  const L_amo = L+NT;
+  const foc = L_amo>0 ? (100*(bp-L_amo/2))/L_amo : 0;
+
+  document.getElementById('out-weight').textContent = total.toFixed(1);
+  const bpDisplay = lenUnit==='mm' ? (bp*25.4).toFixed(1) : bp.toFixed(2);
+  document.getElementById('out-bp').textContent = bpDisplay;
+  document.getElementById('out-foc').textContent = foc.toFixed(2);
+  document.getElementById('foc-marker').style.left = Math.max(0,Math.min(foc/zone.max*100,100))+'%';
+  document.getElementById('foc-status-label').textContent =
+    foc<zone.low ? 'Below optimal' : foc<=zone.high ? 'Optimal range' : 'Above optimal';
+
+  calcKE();
+}
+
+window.addEventListener('load', () => { setUnit(currentUnit); calc(); });
+</script>
+</body>
+</html>
