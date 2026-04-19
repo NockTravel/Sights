@@ -222,6 +222,8 @@ function injectPaperHeader() {
     barebow: '#2d6b2d',
     experimental: '#b8860b'
   };
+  // Also set as data attribute so CSS can target it
+  document.documentElement.setAttribute('data-page', page);
   const col = stampColours[page] || '#1a3d6b';
   const pageLabels = {
     standard: 'Standard',
@@ -255,21 +257,18 @@ function injectPaperHeader() {
   // Stamp area
   const stampArea = document.createElement('div');
   stampArea.className = 'paper-stamp-area';
-  stampArea.innerHTML = `<svg width="160" height="60" viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-8deg);display:block;overflow:visible">
+  stampArea.innerHTML = `<svg class="paper-stamp-svg" width="160" height="60" viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-8deg);display:block;overflow:visible">
     <rect x="4" y="5" width="152" height="50" rx="4" fill="none" stroke="${col}" stroke-width="3"/>
     <rect x="9" y="10" width="142" height="40" rx="2" fill="none" stroke="${col}" stroke-width="1"/>
     <text x="80" y="38" text-anchor="middle" font-family="'Special Elite',monospace" font-size="20" fill="${col}" opacity="0.9">${pageLabels[page].toUpperCase()}</text>
   </svg>`;
   header.appendChild(stampArea);
 
-  // Re-insert nav after paper-header-main (before stamp)
+  // Nav goes between main and stamp
   origChildren.forEach(el => {
     if (el.tagName === 'NAV') {
       header.insertBefore(el, stampArea);
     }
-  });
-  // Burger goes last
-  origChildren.forEach(el => {
     if (el.classList && el.classList.contains('burger-btn')) {
       header.appendChild(el);
     }
