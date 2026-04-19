@@ -61,6 +61,7 @@
     <a class="nav-link" href="index.html">Standard</a>
     <a class="nav-link" href="barebow.html">Barebow</a>
     <a class="nav-link" href="experimental.html">Experimental</a>
+    <a class="nav-link" href="arrow-tools.html">Arrow Tools</a>
     <span class="nav-link active">FOC</span>
   </nav>
   <div class="header-right">arrow foc calculator</div>
@@ -186,7 +187,7 @@
       <div class="foc-metric"><div class="foc-metric-label">KE</div><div class="foc-metric-value"><span id="out-ke-ftlb">—</span><span class="foc-metric-unit"> ft·lb</span></div></div>
       <div class="foc-metric"><div class="foc-metric-label">KE</div><div class="foc-metric-value"><span id="out-ke-j">—</span><span class="foc-metric-unit"> J</span></div></div>
       <div class="foc-metric"><div class="foc-metric-label">Momentum</div><div class="foc-metric-value"><span id="out-mom">—</span><span class="foc-metric-unit"> slug·ft/s</span></div></div>
-      <div class="foc-metric"><div class="foc-metric-label">Pen. factor</div><div class="foc-metric-value"><span id="out-pf">—</span></div></div>
+      <div class="foc-metric"><div class="foc-metric-label">Pen. factor</div><div class="foc-metric-value"><span id="out-pf">—</span><span class="foc-metric-unit"> gr/mm²</span></div></div>
     </div>
     <div class="foc-section">Downrange velocity</div>
     <div class="tw">
@@ -282,8 +283,11 @@ function velAtDist(v0, dist, L_m, d_m, mass_kg) {
   return v;
 }
 
-function penFactor(mom_si, d_m) {
-  return (mom_si/(Math.PI*Math.pow(d_m/2,2))).toFixed(1);
+function penFactor(mom_si, d_m, total_gr, d_mm) {
+  // g/mm² — grains per sq mm of tip area, more intuitive for archers
+  const tipArea_mm2 = Math.PI * Math.pow(d_mm/2, 2);
+  const mom_grains_ms = mom_si / 0.0000647989; // convert kg·m/s to gr·m/s
+  return (mom_grains_ms / tipArea_mm2).toFixed(2);
 }
 
 function calcDownrange(v0_ms, total_gr, L_in, d_mm) {
@@ -295,7 +299,7 @@ function calcDownrange(v0_ms, total_gr, L_in, d_mm) {
     const ke_j = 0.5*mass_kg*v*v;
     const mom = mass_kg*v;
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${dist} m / ${Math.round(dist*1.09361)} yd</td><td>${v.toFixed(1)}</td><td>${(v/0.3048).toFixed(1)}</td><td>${ke_j.toFixed(1)}</td><td>${mom.toFixed(4)}</td><td>${penFactor(mom,d_m)}</td>`;
+    tr.innerHTML = `<td>${dist} m / ${Math.round(dist*1.09361)} yd</td><td>${v.toFixed(1)}</td><td>${(v/0.3048).toFixed(1)}</td><td>${ke_j.toFixed(1)}</td><td>${mom.toFixed(4)}</td><td>${penFactor(mom,d_m,total_gr,d_mm)} <span style='font-size:10px;color:var(--dim)'>gr/mm²</span></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -314,7 +318,7 @@ function calcKE() {
   document.getElementById('out-ke-ftlb').textContent = ke_ftlb.toFixed(1);
   document.getElementById('out-ke-j').textContent = (ke_ftlb*1.35582).toFixed(1);
   document.getElementById('out-mom').textContent = mom_slug.toFixed(4);
-  document.getElementById('out-pf').textContent = penFactor(mom_si, d_mm/1000);
+  document.getElementById('out-pf').textContent = penFactor(mom_si, d_mm/1000, currentTotal, d_mm);
   sec.classList.remove('dimmed');
   calcDownrange(v_ms, currentTotal, L_in, d_mm);
 }
