@@ -229,8 +229,8 @@ function setTableInterval(iv) {
 function calculate() {
   const es=gi('eyeSight')/1000, ea=gi('eyeArrow')/1000;
   const aL=gi('arrowLen'), aD=gi('arrowDiam'), aG=gi('arrowMass');
-  const d1=gi('dist1'), d2=gi('dist2'), s1=gi('set1'), s2=gi('set2');
-  const tpi=gi('tpi'), mxD=gi('maxDist');
+  const d1=toMetres(gi('dist1')), d2=toMetres(gi('dist2')), s1=gi('set1'), s2=gi('set2');
+  const tpi=gi('tpi'), mxD=toMetres(gi('maxDist'));
   const errEl = document.getElementById('err'); errEl.textContent = '';
   if ([es,ea,aL,aD,aG,d1,d2,s1,s2,tpi,mxD].some(isNaN)) { errEl.textContent = 'Fill in all fields.'; return; }
   if (d1 >= d2) { errEl.textContent = 'Short dist must be less than long dist.'; return; }
@@ -400,6 +400,7 @@ function saveProfile() {
   const profiles=loadP(), data={};
   STD_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el) data[id]=el.value; });
   data.youthBow=document.getElementById('youthBow').checked;
+  data._unit=currentUnit;
   profiles[name]=data; saveP(profiles);
   document.getElementById('profileName').value=''; renderProfiles();
 }
@@ -408,6 +409,7 @@ function loadProfile(name) {
   const data=loadP()[name]; if (!data) return;
   STD_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el&&data[id]!==undefined) el.value=data[id]; });
   if (data.youthBow!==undefined) document.getElementById('youthBow').checked=data.youthBow;
+  if (data._unit) setUnit(data._unit);
   onYouthChange(); calculate();
 }
 
