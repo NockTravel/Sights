@@ -75,8 +75,8 @@ function removePaperHeader() {
   // Remove sheet wrapper if present
   const sheet = document.querySelector('.sheet');
   if (sheet) {
-    const app = sheet.querySelector('.app');
-    if (app) sheet.parentNode.insertBefore(app, sheet);
+    const inner = sheet.querySelector('.app, .tools-wrap, .ab-wrap, .foc-app');
+    if (inner) sheet.parentNode.insertBefore(inner, sheet);
     sheet.remove();
   }
 }
@@ -315,13 +315,13 @@ function injectPaperHeader() {
     }
   });
 
-  // Wrap app content in sheet div if not already present
-  const app = document.querySelector('.app');
-  if (app && !app.closest('.sheet')) {
+  // Wrap main content in sheet div if not already present
+  const mainContent = document.querySelector('.app, .tools-wrap, .ab-wrap, .foc-app');
+  if (mainContent && !mainContent.closest('.sheet')) {
     const sheet = document.createElement('div');
     sheet.className = 'sheet';
-    app.parentNode.insertBefore(sheet, app);
-    sheet.appendChild(app);
+    mainContent.parentNode.insertBefore(sheet, mainContent);
+    sheet.appendChild(mainContent);
   }
 }
 
