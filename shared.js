@@ -50,7 +50,7 @@ const THEMES = [
   {
     id: 'paper',
     name: 'Paper',
-    desc: 'Field document aesthetic',
+    desc: 'Military field document — typewriter fonts, cream paper, ink aesthetic',
     swatch: { bg: '#f0ead6', accent: '#1a3d6b', text: '#1a1612' }
   }
 ];
