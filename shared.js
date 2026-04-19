@@ -255,7 +255,10 @@ function injectPaperHeader() {
   const stampColours = {
     standard: '#1a3d6b',
     barebow: '#2d6b2d',
-    experimental: '#b8860b'
+    experimental: '#b8860b',
+    'workshop-tools': '#5a5a5a',
+    'arrow-builder': '#5a5a5a',
+    foc: '#5a5a5a'
   };
   // Also set as data attribute so CSS can target it
   document.documentElement.setAttribute('data-page', page);
@@ -263,7 +266,10 @@ function injectPaperHeader() {
   const pageLabels = {
     standard: 'Standard',
     barebow: 'Barebow',
-    experimental: 'Experimental'
+    experimental: 'Experimental',
+    'workshop-tools': 'Workshop',
+    'arrow-builder': 'Arrow Builder',
+    foc: 'FOC'
   };
 
   const header = document.querySelector('header');
