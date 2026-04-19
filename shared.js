@@ -48,6 +48,12 @@ const THEMES = [
     swatch: { bg: '#0d0608', accent: '#c85040', text: '#f0ddd8' }
   },
   {
+    id: 'light',
+    name: 'Light',
+    desc: 'Clean system UI — white surfaces, iOS/Android style',
+    swatch: { bg: '#f2f2f7', accent: '#007aff', text: '#000000' }
+  },
+  {
     id: 'paper',
     name: 'Paper',
     desc: 'Military field document — typewriter fonts, cream paper, ink aesthetic',
