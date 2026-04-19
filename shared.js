@@ -59,6 +59,15 @@ function applyTheme(id) {
   document.documentElement.setAttribute('data-theme', id);
   localStorage.setItem('sc_theme', id);
   document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('active', c.dataset.theme === id));
+  if (id === 'paper') {
+    // Reset paperized flag so header can be rebuilt
+    const h = document.querySelector('header');
+    if (h) delete h.dataset.paperized;
+    applyPaperLayout();
+  } else {
+    // If switching away from paper, reload to restore original header
+    location.reload();
+  }
 }
 
 function loadTheme() {
@@ -202,10 +211,104 @@ function downloadBlob(filename, content, mime) {
   a.click();
 }
 
+/* ── Page detection ── */
+function detectPage() {
+  const path = location.pathname;
+  if (path.includes('barebow')) return 'barebow';
+  if (path.includes('experimental')) return 'experimental';
+  return 'standard';
+}
+
+/* ── Paper header injection ── */
+function injectPaperHeader() {
+  const theme = localStorage.getItem('sc_theme') || 'dark';
+  if (theme !== 'paper') return;
+  const page = detectPage();
+  const stampColours = {
+    standard: '#1a3d6b',
+    barebow: '#2d6b2d',
+    experimental: '#b8860b'
+  };
+  const col = stampColours[page] || '#1a3d6b';
+  const pageLabels = {
+    standard: 'Standard',
+    barebow: 'Barebow',
+    experimental: 'Experimental'
+  };
+
+  const header = document.querySelector('header');
+  if (!header || header.dataset.paperized) return;
+  header.dataset.paperized = '1';
+
+  // Save original children
+  const origChildren = Array.from(header.children);
+
+  // Build paper header structure
+  header.innerHTML = '';
+
+  // Red vertical form number strip
+  const formNo = document.createElement('div');
+  formNo.className = 'paper-form-no';
+  formNo.textContent = 'FORM SC-1   v0.3.0';
+  header.appendChild(formNo);
+
+  // Main title area
+  const main = document.createElement('div');
+  main.className = 'paper-header-main';
+  main.innerHTML = `<div style="font-family:'Special Elite',monospace;font-size:28px;color:#f0ead6;letter-spacing:0.25em;text-transform:uppercase;line-height:1;margin-bottom:4px">SightCalc</div>
+    <div style="font-family:'Courier Prime',monospace;font-size:11px;color:#b8aa90;letter-spacing:0.3em;text-transform:uppercase">Archery Sight Setting Calculator &mdash; ${pageLabels[page]}</div>`;
+  header.appendChild(main);
+
+  // Stamp area
+  const stampArea = document.createElement('div');
+  stampArea.className = 'paper-stamp-area';
+  stampArea.innerHTML = `<svg width="160" height="60" viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-8deg);display:block;overflow:visible">
+    <rect x="4" y="5" width="152" height="50" rx="4" fill="none" stroke="${col}" stroke-width="3"/>
+    <rect x="9" y="10" width="142" height="40" rx="2" fill="none" stroke="${col}" stroke-width="1"/>
+    <text x="80" y="38" text-anchor="middle" font-family="'Special Elite',monospace" font-size="20" fill="${col}" opacity="0.9">${pageLabels[page].toUpperCase()}</text>
+  </svg>`;
+  header.appendChild(stampArea);
+
+  // Re-append nav and burger from original
+  origChildren.forEach(el => {
+    if (el.tagName === 'NAV' || el.classList.contains('burger-btn')) {
+      header.appendChild(el);
+    }
+  });
+
+  // Wrap app content in sheet div if not already present
+  const app = document.querySelector('.app');
+  if (app && !app.closest('.sheet')) {
+    const sheet = document.createElement('div');
+    sheet.className = 'sheet';
+    app.parentNode.insertBefore(sheet, app);
+    sheet.appendChild(app);
+  }
+}
+
+function applyPaperLayout() {
+  const theme = localStorage.getItem('sc_theme') || 'dark';
+  const body = document.body;
+  if (theme === 'paper') {
+    injectPaperHeader();
+    // Wrap in sheet if needed
+    const app = document.querySelector('.app');
+    if (app && !app.closest('.sheet')) {
+      const sheet = document.createElement('div');
+      sheet.className = 'sheet';
+      app.parentNode.insertBefore(sheet, app);
+      sheet.appendChild(app);
+    }
+  }
+}
+
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', () => {
+  const page = detectPage();
+  document.documentElement.setAttribute('data-page', page);
   loadTheme();
   buildSettingsPanel();
+  applyPaperLayout();
   // Close overlay on background click
   const overlay = document.getElementById('settingsOverlay');
   if (overlay) overlay.addEventListener('click', e => { if (e.target === overlay) closeSettings(); });
