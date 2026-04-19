@@ -333,6 +333,14 @@ function deleteProfile(name) {
   renderProfiles();
 }
 
+function onThreePointChange() {
+  const on = document.getElementById('useThreePoint').checked;
+  const row = document.getElementById('midRow');
+  row.style.opacity = on ? '1' : '0.35';
+  row.style.pointerEvents = on ? 'auto' : 'none';
+  row.querySelectorAll('input').forEach(i => i.disabled = !on);
+}
+
 let R = null;
 let tableInterval = 1;
 
