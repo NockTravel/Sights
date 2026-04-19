@@ -197,9 +197,9 @@ function crawlAtDist(d, v0, eyeTipM, anglePointOn, drag, am) {
 
 function calculate() {
   const eyeTipM = gi('eyeTip')/1000;
-  const pointOn = gi('pointOn');
+  const pointOn = toMetres(gi('pointOn'));
   const aL=gi('arrowLen'), aD=gi('arrowDiam'), aG=gi('arrowMass');
-  const d1=gi('dist1'), cr1=gi('crawl1');
+  const d1=toMetres(gi('dist1')), cr1=gi('crawl1');
   const errEl = document.getElementById('err'); errEl.textContent = '';
   if ([eyeTipM,pointOn,aL,aD,aG,d1,cr1].some(isNaN)) { errEl.textContent='Fill in all fields.'; return; }
   if (d1 >= pointOn) { errEl.textContent='Calibration dist must be shorter than point-on.'; return; }
@@ -346,12 +346,13 @@ function saveProfile() {
   if (!name) { errEl.textContent='Enter a name.'; return; } errEl.textContent='';
   const profiles=loadP(), data={};
   BB_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el) data[id]=el.value; });
-  profiles[name]=data; saveP(profiles);
+  data._unit=currentUnit; profiles[name]=data; saveP(profiles);
   document.getElementById('profileName').value=''; renderProfiles();
 }
 function loadProfile(name) {
   const data=loadP()[name]; if (!data) return;
   BB_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el&&data[id]!==undefined) el.value=data[id]; });
+  if(data._unit) setUnit(data._unit);
   calculate();
 }
 function deleteProfile(name) { const p=loadP(); delete p[name]; saveP(p); renderProfiles(); }
