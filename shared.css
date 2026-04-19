@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap');
+
 /* ═══════════════════════════════════════
    SightCalc — shared.css
    All theme variables, common components,
@@ -72,7 +74,7 @@
   --tape-bg: #ffffff;
 }
 
-/* ── Theme: Paper ── */
+/* ── Theme: Paper (military field document) ── */
 [data-theme="paper"] {
   --bg: #c8bb9a;
   --surface: #f0ead6;
@@ -92,7 +94,181 @@
   --input-border: #3d3428;
   --btn-calc-color: #f0ead6;
   --tape-bg: #ffffff;
+  --mono: 'Courier Prime', 'Courier New', monospace;
+  --sans: 'Courier Prime', 'Courier New', monospace;
+  --ink: #1a1612;
+  --ink-mid: #3d3428;
+  --ink-faint: #8a7d65;
+  --paper: #f0ead6;
+  --paper-dark: #e4dcc4;
+  --paper-darker: #d4c9a8;
+  --red-margin: #8b1a0e;
+  --stamp: #2d4a1e;
 }
+
+/* Paper theme body — cream background */
+[data-theme="paper"] body {
+  background: #c8bb9a;
+  font-family: 'Courier Prime', 'Courier New', monospace;
+}
+
+/* Paper theme header — dark band with typewriter title */
+[data-theme="paper"] header {
+  background: #1a1612;
+  border-bottom: none;
+}
+[data-theme="paper"] h1 {
+  font-family: 'Special Elite', 'Courier New', monospace;
+  color: #f0ead6;
+  letter-spacing: 0.25em;
+  font-size: 20px;
+}
+[data-theme="paper"] .header-right {
+  color: #8a7d65;
+  letter-spacing: 0.3em;
+  font-family: 'Courier Prime', monospace;
+}
+[data-theme="paper"] .nav-link { color: #8a7d65; font-family: 'Courier Prime', monospace; letter-spacing: 0.15em; }
+[data-theme="paper"] .nav-link.active { color: #f0ead6; background: #2d2820; border-color: #5a4e38; }
+[data-theme="paper"] .nav-link:hover:not(.active) { color: #f0ead6; }
+[data-theme="paper"] .burger-btn span { background: #8a7d65; }
+[data-theme="paper"] .burger-btn:hover span { background: #f0ead6; }
+
+/* Paper theme sheet — red margin line */
+[data-theme="paper"] .app {
+  background: #f0ead6;
+  position: relative;
+}
+[data-theme="paper"] .app::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: #8b1a0e;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Paper theme sidebar */
+[data-theme="paper"] .sidebar {
+  background: #f0ead6;
+  border-right: 1.5px solid #1a1612;
+}
+[data-theme="paper"] .output {
+  background: #f0ead6;
+}
+[data-theme="paper"] .tape-col {
+  background: #e4dcc4;
+}
+
+/* Paper theme panels — no card look, just section dividers */
+[data-theme="paper"] .panel {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #c4b898;
+  border-radius: 0;
+  margin-bottom: 0;
+}
+[data-theme="paper"] .ph {
+  background: transparent;
+  border-bottom: none;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: #8a7d65;
+  padding: 10px 16px 4px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+[data-theme="paper"] .ph::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #c4b898;
+}
+[data-theme="paper"] .pb { padding: 6px 16px 12px 24px; }
+
+/* Paper theme inputs — underline only */
+[data-theme="paper"] input[type="number"],
+[data-theme="paper"] input[type="text"],
+[data-theme="paper"] select {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #3d3428;
+  border-radius: 0;
+  color: #1a1612;
+  font-family: 'Courier Prime', monospace;
+  font-size: 15px;
+  padding: 2px 2px 3px;
+}
+[data-theme="paper"] input:focus,
+[data-theme="paper"] select:focus { border-bottom-color: #1a3d6b; outline: none; }
+[data-theme="paper"] input:disabled { border-bottom-style: dashed; color: #b8aa90; }
+
+/* Paper theme buttons */
+[data-theme="paper"] .btn-calc {
+  background: #1a1612;
+  color: #f0ead6;
+  border-radius: 0;
+  font-family: 'Special Elite', monospace;
+  letter-spacing: 0.2em;
+}
+[data-theme="paper"] .btn-calc:hover { background: #3d3428; }
+[data-theme="paper"] .bsm {
+  border-color: #8a7d65;
+  color: #8a7d65;
+  border-radius: 0;
+  font-family: 'Courier Prime', monospace;
+}
+[data-theme="paper"] .bsm:hover { border-color: #1a1612; color: #1a1612; }
+
+/* Paper theme labels */
+[data-theme="paper"] label { color: #8a7d65; font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Paper theme table */
+[data-theme="paper"] table { font-family: 'Courier Prime', monospace; }
+[data-theme="paper"] th { background: #e4dcc4; color: #8a7d65; border-bottom: 1.5px solid #1a1612; }
+[data-theme="paper"] td { border-bottom: 1px solid #c4b898; }
+[data-theme="paper"] tr:hover td { background: #e8e0c8; }
+[data-theme="paper"] tr.peak td { background: #ffe8d4; color: #8b3a0e; }
+[data-theme="paper"] tr.calib td { background: #d8e8f4; color: #1a3d6b; }
+[data-theme="paper"] .ttb { background: #e4dcc4; border-bottom: 1.5px solid #1a1612; }
+
+/* Paper theme metrics */
+[data-theme="paper"] .metric { background: #e4dcc4; border-color: #c4b898; border-radius: 0; }
+[data-theme="paper"] .mv { color: #1a3d6b; }
+
+/* Paper theme switch */
+[data-theme="paper"] .switch-track { background: #c4b898; border: 1.5px solid #8a7d65; border-radius: 0; }
+[data-theme="paper"] .switch-track::after { background: #8a7d65; border-radius: 0; }
+[data-theme="paper"] .switch input:checked + .switch-track { background: #1a3d6b; border-color: #1a3d6b; }
+[data-theme="paper"] .switch input:checked + .switch-track::after { background: #f0ead6; }
+
+/* Paper theme settings panel */
+[data-theme="paper"] .settings-panel { background: #f0ead6; border-left: 1.5px solid #1a1612; }
+[data-theme="paper"] .settings-header { border-bottom: 1.5px solid #1a1612; font-family: 'Special Elite', monospace; letter-spacing: 0.2em; }
+[data-theme="paper"] .setting-group-title { color: #8a7d65; border-bottom-color: #c4b898; font-family: 'Courier Prime', monospace; }
+[data-theme="paper"] .theme-card { background: #e4dcc4; border-color: #c4b898; border-radius: 0; }
+[data-theme="paper"] .theme-card.active { border-color: #1a3d6b; }
+[data-theme="paper"] .units-toggle { background: #e4dcc4; border-color: #c4b898; border-radius: 0; }
+[data-theme="paper"] .units-btn.active { background: #1a1612; color: #f0ead6; }
+
+/* Paper theme seg controls */
+[data-theme="paper"] .seg-ctrl { border-radius: 0; }
+[data-theme="paper"] .seg-btn { font-family: 'Courier Prime', monospace; border-radius: 0; }
+[data-theme="paper"] .seg-btn.active { background: #1a1612; color: #f0ead6; }
+
+/* Paper theme info note */
+[data-theme="paper"] .info-note { background: #e4dcc4; border-color: #c4b898; border-radius: 0; }
+
+/* Paper theme tn note */
+[data-theme="paper"] .tn { background: #f5ede0; border-color: #c4a070; border-radius: 0; }
+
+/* Paper theme tape col */
+[data-theme="paper"] .tape-hd { font-family: 'Special Elite', monospace; letter-spacing: 0.2em; }
 
 /* ══════════════════════════════════════
    Base reset & body
