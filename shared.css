@@ -272,8 +272,11 @@
 
 /* Per-page stamp colours */
 [data-theme="paper"][data-page="standard"] { --stamp: #1a3d6b; }
+[data-theme="paper"][data-page="standard"] .paper-stamp-svg rect, [data-theme="paper"][data-page="standard"] .paper-stamp-svg text { stroke: #1a3d6b; fill: #1a3d6b; }
 [data-theme="paper"][data-page="barebow"]  { --stamp: #2d6b2d; }
-[data-theme="paper"][data-page="experimental"] { --stamp: #8b6a00; }
+[data-theme="paper"][data-page="barebow"] .paper-stamp-svg rect { stroke: #2d6b2d; } [data-theme="paper"][data-page="barebow"] .paper-stamp-svg text { fill: #2d6b2d; }
+[data-theme="paper"][data-page="experimental"] { --stamp: #b8860b; }
+[data-theme="paper"][data-page="experimental"] .paper-stamp-svg rect { stroke: #b8860b; } [data-theme="paper"][data-page="experimental"] .paper-stamp-svg text { fill: #b8860b; }
 
 /* Paper theme — full override */
 [data-theme="paper"] body {
@@ -373,7 +376,10 @@
   overflow: visible;
 }
 
-/* Nav strip */
+/* Nav strip — sits at bottom of header in paper theme */
+[data-theme="paper"] header {
+  flex-wrap: wrap;
+}
 [data-theme="paper"] nav {
   background: #e4dcc4;
   border-bottom: 1.5px solid #1a1612;
@@ -381,6 +387,8 @@
   display: flex;
   padding-left: 20px;
   gap: 0;
+  width: 100%;
+  order: 10;
 }
 
 [data-theme="paper"] .nav-link {
@@ -870,18 +878,18 @@ tr.extra td { color: var(--accent); font-style: italic; }
   @page { margin: 5mm; size: A4 portrait; }
 }
 
-/* ── Per-page accent: Dawn ── */
-[data-theme="dawn"][data-page="standard"] { --accent: #4a78b8; --accent2: #6a98d8; }
-[data-theme="dawn"][data-page="barebow"]  { --accent: #4a8a5a; --accent2: #6aaa7a; }
-[data-theme="dawn"][data-page="experimental"] { --accent: #c87020; --accent2: #e89040; }
 
-[data-theme="dawn"] h1 { color: var(--accent); }
-[data-theme="dawn"] .nav-link.active { color: var(--accent); border-color: var(--accent); }
+/* ── Per-page accent: Dark ── */
+[data-theme="dark"][data-page="standard"], :root[data-page="standard"] { --accent: #5a90c8; --accent2: #7ab0e8; }
+[data-theme="dark"][data-page="barebow"],  :root[data-page="barebow"]  { --accent: #7aab8a; --accent2: #9acbaa; }
+[data-theme="dark"][data-page="experimental"], :root[data-page="experimental"] { --accent: #f0c030; --accent2: #f8d060; }
+
+/* ── Dawn: consistent across all pages ── */
 
 /* ── Per-page accent: High Contrast ── */
 [data-theme="contrast"][data-page="standard"] { --accent: #60aaff; --accent2: #80caff; }
 [data-theme="contrast"][data-page="barebow"]  { --accent: #60ee80; --accent2: #80ffaa; }
-[data-theme="contrast"][data-page="experimental"] { --accent: #ffdd00; --accent2: #ffee44; }
+[data-theme="contrast"][data-page="experimental"] { --accent: #ffdd00; --accent2: #ffee44; --btn-calc-color: #000000; }
 
 [data-theme="contrast"] h1 { color: var(--accent); }
 [data-theme="contrast"] .nav-link.active { color: var(--accent); border-color: var(--accent); }
