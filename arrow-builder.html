@@ -307,6 +307,12 @@ function sortTable() {
       newPointNums[shaft.idx] = pt.origNum;
     }
   });
+  // Append unmatched extras back at the end
+  const extras = indexedPoints.slice(shafts.length);
+  extras.forEach(pt => {
+    newPoints.push(pt.w);
+    newPointNums.push(pt.origNum);
+  });
   points = newPoints;
   pointNums = newPointNums;
   sorted = true;
