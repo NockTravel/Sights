@@ -272,11 +272,8 @@
 
 /* Per-page stamp colours */
 [data-theme="paper"][data-page="standard"] { --stamp: #1a3d6b; }
-[data-theme="paper"][data-page="standard"] .paper-stamp-svg rect, [data-theme="paper"][data-page="standard"] .paper-stamp-svg text { stroke: #1a3d6b; fill: #1a3d6b; }
 [data-theme="paper"][data-page="barebow"]  { --stamp: #2d6b2d; }
-[data-theme="paper"][data-page="barebow"] .paper-stamp-svg rect { stroke: #2d6b2d; } [data-theme="paper"][data-page="barebow"] .paper-stamp-svg text { fill: #2d6b2d; }
 [data-theme="paper"][data-page="experimental"] { --stamp: #b8860b; }
-[data-theme="paper"][data-page="experimental"] .paper-stamp-svg rect { stroke: #b8860b; } [data-theme="paper"][data-page="experimental"] .paper-stamp-svg text { fill: #b8860b; }
 
 /* Paper theme — full override */
 [data-theme="paper"] body {
