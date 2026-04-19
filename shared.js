@@ -118,7 +118,7 @@ function buildSettingsPanel() {
     <div>
       <div class="setting-group-title">Tools</div>
       <a href="workshop-tools.html" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;text-decoration:none;color:var(--text);font-family:var(--mono);font-size:12px;margin-bottom:8px" onclick="closeSettings()">
-        Arrow Tools
+        Workshop Tools
         <span style="color:var(--muted);font-size:14px">&#8250;</span>
       </a>
     </div>
