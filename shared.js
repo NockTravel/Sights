@@ -55,6 +55,21 @@ const THEMES = [
   }
 ];
 
+function removePaperHeader() {
+  const header = document.querySelector('header');
+  if (!header || !header.dataset.paperized) return;
+  // Remove injected elements
+  header.querySelectorAll('.paper-form-no, .paper-header-main, .paper-stamp-area').forEach(el => el.remove());
+  delete header.dataset.paperized;
+  // Remove sheet wrapper if present
+  const sheet = document.querySelector('.sheet');
+  if (sheet) {
+    const app = sheet.querySelector('.app');
+    if (app) sheet.parentNode.insertBefore(app, sheet);
+    sheet.remove();
+  }
+}
+
 function applyTheme(id) {
   document.documentElement.setAttribute('data-theme', id);
   localStorage.setItem('sc_theme', id);
@@ -63,6 +78,8 @@ function applyTheme(id) {
     const h = document.querySelector('header');
     if (h) delete h.dataset.paperized;
     applyPaperLayout();
+  } else {
+    removePaperHeader();
   }
 }
 
