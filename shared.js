@@ -1,0 +1,212 @@
+/* ═══════════════════════════════════════
+   SightCalc — shared.js
+   Physics engine, theme switcher,
+   burger menu, units, profiles base,
+   URL sharing, display utils
+═══════════════════════════════════════ */
+
+/* ── Units ── */
+let currentUnit = localStorage.getItem('sc_unit') || 'm';
+
+function setUnit(u) {
+  currentUnit = u;
+  localStorage.setItem('sc_unit', u);
+  document.querySelectorAll('.units-btn').forEach(b => b.classList.toggle('active', b.dataset.unit === u));
+  document.querySelectorAll('.unit-label').forEach(el => el.textContent = u === 'm' ? 'm' : 'yd');
+  // Re-render table if results visible
+  if (typeof renderTable === 'function' && document.getElementById('results')?.style.display !== 'none') renderTable();
+}
+
+function toUnit(metres) {
+  return currentUnit === 'm' ? metres : Math.round(metres * 1.09361 * 10) / 10;
+}
+
+function fromUnit(val) {
+  return currentUnit === 'm' ? val : val / 1.09361;
+}
+
+function unitLabel() { return currentUnit; }
+
+/* ── Theme ── */
+const THEMES = [
+  {
+    id: 'dark',
+    name: 'Dark',
+    desc: 'Default dark interface',
+    swatch: { bg: '#0f0f0f', accent: '#5a90c8', text: '#e8e4dc' }
+  },
+  {
+    id: 'contrast',
+    name: 'High Contrast',
+    desc: 'Maximum readability outdoors',
+    swatch: { bg: '#000000', accent: '#ffffff', text: '#ffffff' }
+  },
+  {
+    id: 'dawn',
+    name: 'Dawn',
+    desc: 'Optimised for low-light shooting — warm red tones preserve night vision at dawn and dusk',
+    swatch: { bg: '#0d0608', accent: '#c85040', text: '#f0ddd8' }
+  },
+  {
+    id: 'paper',
+    name: 'Paper',
+    desc: 'Field document aesthetic',
+    swatch: { bg: '#f0ead6', accent: '#1a3d6b', text: '#1a1612' }
+  }
+];
+
+function applyTheme(id) {
+  document.documentElement.setAttribute('data-theme', id);
+  localStorage.setItem('sc_theme', id);
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('active', c.dataset.theme === id));
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem('sc_theme') || 'dark';
+  applyTheme(saved);
+}
+
+/* ── Burger menu ── */
+function openSettings() {
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+
+function buildSettingsPanel() {
+  const body = document.getElementById('settingsBody');
+  if (!body) return;
+
+  const savedTheme = localStorage.getItem('sc_theme') || 'dark';
+
+  body.innerHTML = `
+    <div>
+      <div class="setting-group-title">Units</div>
+      <div class="units-toggle">
+        <button class="units-btn${currentUnit==='m'?' active':''}" data-unit="m" onclick="setUnit('m')">Metres (m)</button>
+        <button class="units-btn${currentUnit==='yd'?' active':''}" data-unit="yd" onclick="setUnit('yd')">Yards (yd)</button>
+      </div>
+    </div>
+    <div>
+      <div class="setting-group-title">Theme</div>
+      <div class="theme-grid">
+        ${THEMES.map(t => `
+          <div class="theme-card${t.id===savedTheme?' active':''}" data-theme="${t.id}" onclick="applyTheme('${t.id}')">
+            <div class="theme-card-swatch" style="background:${t.swatch.bg};color:${t.swatch.accent};border:1px solid ${t.swatch.accent}22">
+              <span style="font-family:var(--mono);font-size:9px;letter-spacing:0.08em;opacity:0.9">Aa</span>
+            </div>
+            <div class="theme-card-name">${t.name}</div>
+            <div class="theme-card-desc">${t.desc}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* ── Physics ── */
+function trajectory(td, v0, la, sl, dr, am) {
+  const dt = 0.002;
+  let x=0, y=0, vx=v0*Math.cos(la), vy=v0*Math.sin(la), a=la;
+  let ax=(-dr*Math.cos(a)/am)-9.8*Math.sin(sl), ay=(-dr*Math.sin(a)/am)-9.8*Math.cos(sl);
+  while (x < td) {
+    x += vx*dt + .5*ax*dt*dt; y += vy*dt + .5*ay*dt*dt;
+    vx += ax*dt; vy += ay*dt; a = vy/vx;
+    ax = (-dr*Math.cos(a)/am) - 9.8*Math.sin(sl);
+    ay = (-dr*Math.sin(a)/am) - 9.8*Math.cos(sl);
+  }
+  return y - (x - td)*a;
+}
+
+function calcDrag(v, L, d, m) {
+  const rho=1.204, Lm=L/1000, dm=d/1000, A=Math.PI*dm*Lm, Re=v*Lm/1.52e-5;
+  return .5*rho*v*v*A*(0.0576/Math.pow(Re,.2)+0.0016*Lm/dm/Math.pow(Re,.4))*10/7;
+}
+
+function findAngle(dist, v0, drag, am, tol) {
+  tol = tol || .001;
+  let a=0, s=1, dp=trajectory(dist, v0, a*Math.PI/180, 0, drag, am);
+  while (dp <= 0) { a += s; dp = trajectory(dist, v0, a*Math.PI/180, 0, drag, am); }
+  let i=0;
+  while (Math.abs(dp) > tol && i < 80) {
+    s/=2; i++;
+    while (dp > 0) { a -= s; dp = trajectory(dist, v0, a*Math.PI/180, 0, drag, am); }
+    s/=2; i++;
+    while (dp < 0) { a += s; dp = trajectory(dist, v0, a*Math.PI/180, 0, drag, am); }
+  }
+  return a;
+}
+
+function calcGap(v0, es, ea, d1, d2, dr, am) {
+  const e1=findAngle(d1,v0,dr,am,.001), e2=findAngle(d2,v0,dr,am,.005);
+  return (es*(Math.tan(e2*Math.PI/180)-Math.tan(e1*Math.PI/180))-ea*es*(d2-d1)/d1/d2)*1000;
+}
+
+function sMM(dist, v0, es, ea, dr, am) {
+  const a = findAngle(dist, v0, dr, am, .001);
+  return ((ea*(dist-es)/dist) - es*Math.tan(a*Math.PI/180))*1000;
+}
+
+/* ── Utilities ── */
+function gi(id) { return parseFloat(document.getElementById(id).value); }
+
+function toDisplay(tenths) {
+  return (Math.round((tenths/10)*20)/20).toFixed(2);
+}
+
+/* ── Profile helpers (shared base) ── */
+function confirmDelete(btn, name, deleteFn) {
+  if (btn.dataset.confirming === 'true') {
+    deleteFn(name);
+  } else {
+    btn.dataset.confirming = 'true';
+    btn.textContent = 'confirm?';
+    btn.style.background = 'var(--danger)';
+    btn.style.color = '#fff';
+    btn.style.borderColor = 'var(--danger)';
+    btn.style.padding = '6px 8px';
+    clearTimeout(btn._timer);
+    btn._timer = setTimeout(() => {
+      btn.dataset.confirming = 'false';
+      btn.textContent = '\u2715';
+      btn.style.background = '';
+      btn.style.color = 'var(--danger)';
+      btn.style.padding = '';
+    }, 3000);
+  }
+}
+
+/* ── URL sharing ── */
+function copyURL(fields) {
+  const p = new URLSearchParams();
+  fields.forEach(id => { const el = document.getElementById(id); if (el) p.set(id, el.value); });
+  const url = location.origin + location.pathname + '?' + p.toString();
+  navigator.clipboard.writeText(url).catch(() => {});
+  const b = document.getElementById('urlBar');
+  if (b) { b.textContent = url; b.style.display = 'block'; }
+}
+
+function loadFromURL(fields) {
+  const p = new URLSearchParams(location.search);
+  let found = false;
+  fields.forEach(id => { const v = p.get(id); if (v) { const el = document.getElementById(id); if (el) { el.value = v; found = true; } } });
+  return found;
+}
+
+/* ── Export helpers ── */
+function downloadBlob(filename, content, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = filename;
+  a.click();
+}
+
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded', () => {
+  loadTheme();
+  buildSettingsPanel();
+  // Close overlay on background click
+  const overlay = document.getElementById('settingsOverlay');
+  if (overlay) overlay.addEventListener('click', e => { if (e.target === overlay) closeSettings(); });
+});
