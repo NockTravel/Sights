@@ -17,8 +17,9 @@
   .sz-4, .sz-3          { background:#333333 !important; color:white !important; }
   .sz-2, .sz-1          { background:#dddddd !important; color:#333 !important; }
   .sz-m                 { background:#999999 !important; color:white !important; }
-  .sz-f6,.sz-f5,.sz-f4  { background:#f7dc1f !important; color:#5a4000 !important; }
-  .sz-f3,.sz-f2,.sz-f1  { background:#111111 !important; color:white !important; }
+  .sz-f6,.sz-f5  { background:#f7dc1f !important; color:#5a4000 !important; }
+  .sz-f4,.sz-f3  { background:#111111 !important; color:white !important; }
+  .sz-f2,.sz-f1  { background:#dddddd !important; color:#333333 !important; }
 
   /* Screen system */
   .ps-screen { display: none; min-height: calc(100vh - 52px); flex-direction: column; }
@@ -448,8 +449,9 @@ function psStartSession() {
 // ─── SCORE ZONES ─────────────────────────────────────────
 function psGetZones() {
   if (ps.face === 'field') return [
-    {l:'6',v:6,c:'sz-f6'},{l:'5',v:5,c:'sz-f5'},{l:'4',v:4,c:'sz-f4'},
-    {l:'3',v:3,c:'sz-f3'},{l:'2',v:2,c:'sz-f2'},{l:'1',v:1,c:'sz-f1'},{l:'M',v:0,c:'sz-m'}
+    {l:'6',v:6,c:'sz-f6'},{l:'5',v:5,c:'sz-f5'},
+    {l:'4',v:4,c:'sz-f4'},{l:'3',v:3,c:'sz-f3'},
+    {l:'2',v:2,c:'sz-f2'},{l:'1',v:1,c:'sz-f1'},{l:'M',v:0,c:'sz-m'}
   ];
   return [
     {l:'X',v:10,c:'sz-x'},{l:'10',v:10,c:'sz-10'},{l:'9',v:9,c:'sz-9'},
@@ -461,8 +463,9 @@ function psGetZones() {
 
 function psChipStyle(label, face) {
   if (face==='field') {
-    if (['6','5','4'].includes(label)) return 'background:#f7dc1f;color:#5a4000';
-    if (['3','2','1'].includes(label)) return 'background:#111;color:white';
+    if (['6','5'].includes(label)) return 'background:#f7dc1f;color:#5a4000';
+    if (['4','3'].includes(label)) return 'background:#111;color:white';
+    if (['2','1'].includes(label)) return 'background:#dddddd;color:#333';
     return 'background:#999;color:white';
   }
   if (['X','10','9'].includes(label)) return 'background:#f7dc1f;color:#5a4000';
@@ -851,7 +854,7 @@ function psShowPlotView(num,shots) {
 
 function psPvmClose() { document.getElementById('ps-pvm-overlay').classList.remove('open'); }
 
-window.addEventListener('load', () => { setUnit(currentUnit); });
+window.addEventListener('load', () => { /* theme applied by shared.js DOMContentLoaded */ });
 </script>
 </body>
 </html>
