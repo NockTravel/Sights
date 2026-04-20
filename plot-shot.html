@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en" data-page="plot-shot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SightCalc — Plot Shot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* ── Plot Shot specific — layered on top of shared.css ── */
+
+  /* Score button colours always fixed — they represent physical target face */
+  .sz-x, .sz-10, .sz-9 { background:#f7dc1f !important; color:#5a4000 !important; }
+  .sz-8, .sz-7          { background:#e63946 !important; color:white !important; }
+  .sz-6, .sz-5          { background:#4895ef !important; color:white !important; }
+  .sz-4, .sz-3          { background:#333333 !important; color:white !important; }
+  .sz-2, .sz-1          { background:#dddddd !important; color:#333 !important; }
+  .sz-m                 { background:#999999 !important; color:white !important; }
+  .sz-f6,.sz-f5  { background:#f7dc1f !important; color:#5a4000 !important; }
+  .sz-f4,.sz-f3,.sz-f2,.sz-f1  { background:#4a90c8 !important; color:white !important; }
+
+  /* Screen system */
+  .ps-screen { display: none; min-height: calc(100vh - 52px); flex-direction: column; }
+  .ps-screen.active { display: flex; }
+
+  /* Home */
+  .ps-home-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1.25rem; gap: 12px; }
+  .ps-home-intro { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 8px; }
+  .ps-home-cards { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 12px; }
+  .ps-home-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem 1.5rem; cursor: pointer; display: flex; align-items: center; gap: 16px; transition: border-color 0.15s, background 0.15s; }
+  .ps-home-card:hover { border-color: var(--accent); background: var(--surface2); }
+  .ps-home-card-icon { font-size: 28px; flex-shrink: 0; }
+  .ps-home-card-title { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .ps-home-card-desc { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .ps-sessions-btn { background: transparent; border: 1px solid var(--border2); border-radius: 6px; color: var(--muted); font-family: var(--mono); font-size: 12px; padding: 10px 20px; cursor: pointer; transition: all 0.15s; margin-top: 8px; }
+  .ps-sessions-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Sub header within screens */
+  .ps-subheader { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 8px 1rem; display: flex; justify-content: space-around; }
+  .ps-sh-item { text-align: center; }
+  .ps-sh-val { font-family: var(--mono); font-size: 20px; font-weight: 500; color: var(--accent); }
+  .ps-sh-lbl { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+  /* Setup screen */
+  .ps-setup-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 12px; }
+  .ps-setup-section { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .ps-setup-section h3 { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .ps-option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ps-option-btn { border: 1px solid var(--border2); background: var(--surface2); border-radius: 6px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .ps-option-btn .ob-icon { font-size: 22px; display: block; margin-bottom: 5px; }
+  .ps-option-btn .ob-label { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text); }
+  .ps-option-btn .ob-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .ps-option-btn.selected { border-color: var(--accent); border-width: 2px; background: var(--surface); }
+  .ps-option-btn.selected .ob-label { color: var(--accent); }
+  .ps-start-btn { background: var(--accent); color: var(--btn-calc-color, #0f0f0f); border: none; border-radius: 6px; padding: 14px; font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 0.06em; cursor: pointer; margin: 0 1rem 1rem; width: calc(100% - 2rem); transition: background 0.15s; }
+  .ps-start-btn:hover { background: var(--accent2); }
+  .ps-toggle-row { display: flex; align-items: center; justify-content: space-between; }
+  .ps-toggle-row span { font-family: var(--mono); font-size: 12px; color: var(--text); }
+  .ps-arrow-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .ps-arrow-chip { background: var(--accent); color: var(--btn-calc-color, #0f0f0f); border-radius: 20px; padding: 3px 10px; font-size: 12px; font-family: var(--mono); }
+
+  /* Score only */
+  .ps-score-body { flex: 1; overflow-y: auto; padding: 1rem; }
+  .ps-end-input { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 12px; }
+  .ps-end-input h3 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; }
+  .ps-score-buttons { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 14px; }
+  .score-btn { width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer; font-size: 15px; font-weight: 600; font-family: var(--mono); transition: transform 0.1s; flex-shrink: 0; }
+  .score-btn:active { transform: scale(0.88); }
+  .ps-current-arrows { display: flex; flex-wrap: wrap; gap: 6px; min-height: 44px; align-items: center; margin-bottom: 12px; }
+  .ps-arrow-chip-score { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; font-family: var(--mono); position: relative; cursor: pointer; }
+  .ps-arrow-chip-score .chip-num { position: absolute; top: -4px; right: -4px; background: var(--accent); color: var(--btn-calc-color,#0f0f0f); border-radius: 10px; font-size: 9px; padding: 1px 4px; font-family: var(--mono); }
+  .ps-end-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); }
+  .ps-end-score { font-family: var(--mono); font-size: 26px; font-weight: 500; color: var(--accent); }
+  .ps-submit-btn { background: var(--accent); color: var(--btn-calc-color,#0f0f0f); border: none; border-radius: 6px; padding: 10px 20px; font-family: var(--mono); font-size: 12px; font-weight: 500; cursor: pointer; }
+  .ps-submit-btn:disabled { background: var(--border2); color: var(--dim); cursor: not-allowed; }
+  .ps-ends-history { display: flex; flex-direction: column; gap: 8px; }
+  .ps-end-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+  .ps-ehc-num { font-family: var(--mono); font-size: 11px; color: var(--muted); min-width: 42px; }
+  .ps-ehc-arrows { display: flex; gap: 5px; flex: 1; flex-wrap: wrap; }
+  .ps-ehc-chip { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; font-family: var(--mono); }
+  .ps-ehc-score { font-family: var(--mono); font-size: 16px; font-weight: 500; color: var(--accent); min-width: 26px; text-align: right; }
+  .ps-ehc-total { font-family: var(--mono); font-size: 11px; color: var(--muted); min-width: 34px; text-align: right; }
+
+  /* Plot mode */
+  .ps-plot-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .ps-target-wrap { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; background: #111; min-height: 280px; max-height: 420px; overflow: hidden; }
+  #target-canvas { touch-action: none; cursor: crosshair; display: block; }
+  .ps-zoom-overlay { position: absolute; top: 10px; right: 10px; width: 150px; height: 150px; border-radius: 50%; border: 3px solid white; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.7); pointer-events: none; display: none; }
+  #zoom-canvas { display: block; }
+  .ps-plot-bottom { background: var(--surface); border-top: 1px solid var(--border); padding: 12px 14px; }
+  .ps-plot-arrows { display: flex; gap: 6px; flex-wrap: wrap; min-height: 40px; align-items: center; margin-bottom: 10px; }
+  .ps-plot-pill { display: flex; align-items: center; gap: 4px; border-radius: 20px; padding: 4px 10px 4px 6px; font-size: 12px; font-weight: 600; font-family: var(--mono); }
+  .ps-plot-actions { display: flex; gap: 8px; }
+  .ps-undo-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 10px 14px; font-family: var(--mono); font-size: 12px; cursor: pointer; }
+  .ps-plot-next { flex: 1; background: var(--accent); color: var(--btn-calc-color,#0f0f0f); border: none; border-radius: 6px; padding: 12px; font-family: var(--mono); font-size: 12px; font-weight: 500; cursor: pointer; }
+  .ps-plot-next:disabled { background: var(--border2); color: var(--dim); }
+
+  /* Sessions */
+  .ps-sessions-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 10px; }
+  .ps-session-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .ps-sc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .ps-sc-name { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); }
+  .ps-sc-date { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .ps-sc-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .ps-sc-tag { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 2px 8px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .ps-sc-score { font-family: var(--mono); font-size: 24px; font-weight: 500; color: var(--accent); margin-bottom: 8px; }
+  .ps-sc-actions { display: flex; gap: 6px; }
+  .ps-sc-btn { flex: 1; border: 1px solid var(--border2); background: transparent; color: var(--muted); border-radius: 4px; padding: 7px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
+  .ps-sc-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ps-sc-btn.danger { color: var(--danger); border-color: var(--danger); }
+
+  /* Stats */
+  .ps-stats-body { flex: 1; overflow-y: auto; padding: 1rem; }
+  .ps-stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+  .ps-stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+  .ps-stat-val { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--accent); }
+  .ps-stat-lbl { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .ps-arrow-rank { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 12px; }
+  .ps-arrow-rank h3 { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .ps-ans-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .ps-ans-row:last-child { border-bottom: none; }
+  .ps-ans-num { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--btn-calc-color,#0f0f0f); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .ps-ans-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .ps-ans-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+  .ps-ans-avg { font-family: var(--mono); font-size: 15px; font-weight: 500; color: var(--text); min-width: 32px; text-align: right; }
+
+  /* Arrow num modal */
+  .ps-anm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: center; }
+  .ps-anm-overlay.open { display: flex; }
+  .ps-anm-sheet { background: var(--surface); border-radius: 12px 12px 0 0; padding: 1.25rem; width: 100%; max-width: 500px; border-top: 1px solid var(--border); }
+  .ps-anm-sheet h3 { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 14px; text-align: center; }
+  .ps-anm-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  .ps-anm-btn { padding: 14px; border: 1px solid var(--border2); background: var(--surface2); border-radius: 6px; font-family: var(--mono); font-size: 16px; font-weight: 500; color: var(--text); cursor: pointer; text-align: center; }
+  .ps-anm-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .ps-anm-btn.selected { background: var(--accent); color: var(--btn-calc-color,#0f0f0f); border-color: var(--accent); }
+
+  /* Plot view modal */
+  .ps-pvm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 400; align-items: center; justify-content: center; }
+  .ps-pvm-overlay.open { display: flex; }
+  .ps-pvm-inner { background: #1a1a1a; border-radius: 12px; padding: 1.25rem; width: 90vw; max-width: 380px; }
+  .ps-pvm-title { color: white; font-family: var(--mono); font-size: 13px; font-weight: 500; margin-bottom: 12px; text-align: center; }
+  .ps-pvm-close { background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 6px; padding: 10px; font-family: var(--mono); font-size: 12px; cursor: pointer; margin-top: 12px; width: 100%; }
+
+  /* Toast */
+  .ps-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 20px; font-family: var(--mono); font-size: 12px; z-index: 500; transition: transform 0.3s; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+  .ps-toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Back button within PS */
+  .ps-back { background: none; border: none; cursor: pointer; color: var(--muted); font-family: var(--mono); font-size: 18px; padding: 4px 8px; }
+  .ps-back:hover { color: var(--text); }
+
+  /* Inner header for sub-screens */
+  .ps-inner-header { display: flex; align-items: center; gap: 10px; padding: 10px 1rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .ps-inner-header-title { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+  .ps-inner-header-actions { display: flex; gap: 6px; }
+
+  @media (max-width: 600px) {
+    .ps-stats-grid { grid-template-columns: repeat(2,1fr); }
+    .score-btn { width: 46px; height: 46px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SightCalc</h1>
+  <nav>
+    <a class="nav-link" href="index.html">SightCalc</a>
+    <a class="nav-link" href="workshop-tools.html">Workshop</a>
+    <span class="nav-link active">Plot Shot</span>
+  </nav>
+  <div class="header-right">scoring &amp; plotting</div>
+  <button class="burger-btn" onclick="openSettings()" aria-label="Settings">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <div class="settings-header">Settings<button class="settings-close" onclick="closeSettings()">&#10005;</button></div>
+    <div class="settings-body" id="settingsBody"></div>
+  </div>
+</div>
+
+<!-- ── HOME ── -->
+<div class="ps-screen active" id="ps-home">
+  <div class="ps-home-body">
+    <p class="ps-home-intro">Score ends or plot arrows on a target face.<br>Arrow numbers link back to your build profiles.</p>
+    <div class="ps-home-cards">
+      <div class="ps-home-card" onclick="psStartSetup('score')">
+        <div class="ps-home-card-icon">📋</div>
+        <div>
+          <div class="ps-home-card-title">Score Only</div>
+          <div class="ps-home-card-desc">Enter scores end by end</div>
+        </div>
+      </div>
+      <div class="ps-home-card" onclick="psStartSetup('plot')">
+        <div class="ps-home-card-icon">🎯</div>
+        <div>
+          <div class="ps-home-card-title">Plot &amp; Score</div>
+          <div class="ps-home-card-desc">Tap exact arrow positions on the face</div>
+        </div>
+      </div>
+    </div>
+    <button class="ps-sessions-btn" onclick="psShowSessions()">📁 Saved Sessions</button>
+  </div>
+</div>
+
+<!-- ── SETUP ── -->
+<div class="ps-screen" id="ps-setup">
+  <div class="ps-inner-header">
+    <button class="ps-back" onclick="psShow('ps-home')">←</button>
+    <div class="ps-inner-header-title">New Session</div>
+  </div>
+  <div class="ps-setup-body">
+    <div class="ps-setup-section">
+      <h3>Session name</h3>
+      <input type="text" id="ps-session-name" style="border:1px solid var(--border2);border-radius:4px;background:var(--input-bg,var(--bg));color:var(--text);font-family:var(--mono);font-size:13px;padding:8px;width:100%;outline:none" placeholder="e.g. Training – 70m outdoor">
+    </div>
+    <div class="ps-setup-section">
+      <h3>Target face</h3>
+      <div class="ps-option-grid">
+        <div class="ps-option-btn selected" id="ps-opt-target" onclick="psSelectFace('target')">
+          <span class="ob-icon">🎯</span><div class="ob-label">Target</div><div class="ob-sub">WA / indoor</div>
+        </div>
+        <div class="ps-option-btn" id="ps-opt-field" onclick="psSelectFace('field')">
+          <span class="ob-icon">🌲</span><div class="ob-label">Field</div><div class="ob-sub">Black &amp; yellow</div>
+        </div>
+      </div>
+    </div>
+    <div class="ps-setup-section" id="ps-zoom-section" style="display:none">
+      <h3>Target view (plot mode)</h3>
+      <div class="ps-option-grid">
+        <div class="ps-option-btn selected" id="ps-opt-full" onclick="psSelectZoom('full')">
+          <span class="ob-icon">⭕</span><div class="ob-label">Full face</div><div class="ob-sub" id="ps-zoom-full-sub">All rings 1–10</div>
+        </div>
+        <div class="ps-option-btn" id="ps-opt-zoomed" onclick="psSelectZoom('zoomed')">
+          <span class="ob-icon">🔍</span><div class="ob-label">Zoomed</div><div class="ob-sub">10–6 rings only</div>
+        </div>
+      </div>
+    </div>
+    <div class="ps-setup-section">
+      <h3>Arrows per end</h3>
+      <input type="number" id="ps-ape" value="6" min="1" max="12" style="border:1px solid var(--border2);border-radius:4px;background:var(--input-bg,var(--bg));color:var(--text);font-family:var(--mono);font-size:16px;padding:8px;width:100%;outline:none">
+    </div>
+    <div class="ps-setup-section">
+      <h3>Arrow numbers</h3>
+      <div class="ps-toggle-row">
+        <span>Track individual shaft numbers</span>
+        <label class="switch"><input type="checkbox" id="ps-use-nums" onchange="psToggleNums()"><span class="switch-track"></span></label>
+      </div>
+      <div id="ps-nums-section" style="display:none;margin-top:10px">
+        <div class="field" style="margin-bottom:8px"><label>How many arrows?</label><input type="number" id="ps-arrow-count" value="6" min="1" max="24" oninput="psUpdateChips()"></div>
+        <div class="ps-arrow-chips" id="ps-arrow-chips"></div>
+      </div>
+    </div>
+    <button class="ps-start-btn" style="margin:0;width:100%" onclick="psStartSession()">Start Session →</button>
+  </div>
+</div>
+
+<!-- ── SCORING ── -->
+<div class="ps-screen" id="ps-scoring">
+  <div class="ps-inner-header">
+    <button class="ps-back" onclick="psSaveAndExit()">←</button>
+    <div class="ps-inner-header-title" id="ps-scoring-title">Session</div>
+    <div class="ps-inner-header-actions">
+      <button class="bsm" onclick="psShowStats()" style="padding:5px 10px;font-size:11px">Stats</button>
+      <button class="bsm" onclick="psSaveAndExit()" style="padding:5px 10px;font-size:11px">Save</button>
+    </div>
+  </div>
+  <div class="ps-subheader">
+    <div class="ps-sh-item"><div class="ps-sh-val" id="ps-hdr-end">1</div><div class="ps-sh-lbl">End</div></div>
+    <div class="ps-sh-item"><div class="ps-sh-val" id="ps-hdr-total">0</div><div class="ps-sh-lbl">Total</div></div>
+    <div class="ps-sh-item"><div class="ps-sh-val" id="ps-hdr-avg">—</div><div class="ps-sh-lbl">Average</div></div>
+  </div>
+
+  <!-- Score only body -->
+  <div id="ps-score-body" class="ps-score-body">
+    <div class="ps-end-input">
+      <h3 id="ps-end-title">End 1</h3>
+      <div class="ps-score-buttons" id="ps-score-btns"></div>
+      <div class="ps-current-arrows" id="ps-current-arrows">
+        <span style="font-family:var(--mono);font-size:12px;color:var(--dim)">Tap scores above</span>
+      </div>
+      <div class="ps-end-footer">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:2px">End score</div><div class="ps-end-score" id="ps-end-score">0</div></div>
+        <button class="ps-submit-btn" id="ps-submit-btn" onclick="psSubmitEnd()" disabled>Next End →</button>
+      </div>
+    </div>
+    <div class="ps-ends-history" id="ps-ends-history"></div>
+  </div>
+
+  <!-- Plot body -->
+  <div id="ps-plot-body" class="ps-plot-body" style="display:none">
+    <div class="ps-target-wrap">
+      <canvas id="target-canvas"></canvas>
+      <div class="ps-zoom-overlay" id="ps-zoom-overlay">
+        <canvas id="zoom-canvas" width="150" height="150"></canvas>
+      </div>
+    </div>
+    <div class="ps-plot-bottom">
+      <div class="ps-plot-arrows" id="ps-plot-arrows">
+        <span style="font-family:var(--mono);font-size:12px;color:var(--dim)">Tap the target to plot</span>
+      </div>
+      <div class="ps-plot-actions">
+        <button class="ps-undo-btn" onclick="psUndoPlot()">↩ Undo</button>
+        <button class="ps-plot-next" id="ps-plot-next" onclick="psSubmitPlotEnd()" disabled>Next End →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SESSIONS ── -->
+<div class="ps-screen" id="ps-sessions">
+  <div class="ps-inner-header">
+    <button class="ps-back" onclick="psShow('ps-home')">←</button>
+    <div class="ps-inner-header-title">Saved Sessions</div>
+  </div>
+  <div class="ps-sessions-body" id="ps-sessions-body"></div>
+</div>
+
+<!-- ── STATS ── -->
+<div class="ps-screen" id="ps-stats">
+  <div class="ps-inner-header">
+    <button class="ps-back" onclick="psShow('ps-scoring')">←</button>
+    <div class="ps-inner-header-title">Statistics</div>
+  </div>
+  <div class="ps-stats-body" id="ps-stats-body"></div>
+</div>
+
+<!-- Arrow number modal -->
+<div class="ps-anm-overlay" id="ps-anm-overlay">
+  <div class="ps-anm-sheet">
+    <h3>Which shaft number?</h3>
+    <div class="ps-anm-grid" id="ps-anm-grid"></div>
+  </div>
+</div>
+
+<!-- Plot view modal -->
+<div class="ps-pvm-overlay" id="ps-pvm-overlay">
+  <div class="ps-pvm-inner">
+    <div class="ps-pvm-title" id="ps-pvm-title">Shaft #1 — all shots</div>
+    <canvas id="pvm-canvas" width="320" height="320" style="border-radius:50%;display:block;margin:0 auto"></canvas>
+    <button class="ps-pvm-close" onclick="psPvmClose()">Close</button>
+  </div>
+</div>
+
+<div class="ps-toast" id="ps-toast"></div>
+
+<script src="shared.js"></script>
+<script>
+// Override psShow to be bulletproof
+window.onerror = function(msg, src, line, col, err) {
+  document.body.insertAdjacentHTML('afterbegin', 
+    '<div style="position:fixed;top:52px;left:0;right:0;background:#e05050;color:white;padding:10px;font-family:monospace;font-size:11px;z-index:9999">' + 
+    'JS Error: ' + msg + ' (line ' + line + ')</div>');
+  return false;
+};
+</script>
+<script>
+// ─── STATE ───────────────────────────────────────────────
+let ps = {
+  mode: 'score', face: 'target', zoom: 'full',
+  ape: 6, useNums: false, arrowNums: [],
+  name: '', id: null,
+  ends: [], currentArrows: [], runningTotal: 0,
+  pendingLabel: null, pendingVal: null, pendingNum: null,
+};
+let psCanvas = { arrows: [], pressing: false, pendingNx: undefined, pendingNy: undefined };
+
+// ─── UTILS ───────────────────────────────────────────────
+function psShow(id) {
+  document.querySelectorAll('.ps-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function psToast(msg) {
+  const t = document.getElementById('ps-toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function psGenId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+// ─── SETUP ───────────────────────────────────────────────
+function psStartSetup(mode) {
+  ps.mode = mode;
+  document.getElementById('ps-zoom-section').style.display = (mode === 'plot' && ps.face !== 'field') ? '' : 'none';
+  const d = new Date();
+  document.getElementById('ps-session-name').value = `Session ${d.toLocaleDateString('en-AU',{day:'numeric',month:'short'})}`;
+  psShow('ps-setup');
+}
+
+function psSelectFace(f) {
+  ps.face = f;
+  document.getElementById('ps-opt-target').classList.toggle('selected', f==='target');
+  document.getElementById('ps-opt-field').classList.toggle('selected', f==='field');
+  // Field has no zoom option - grey it out and reset to full
+  const zoomedBtn = document.getElementById('ps-opt-zoomed');
+  if (f === 'field') {
+    zoomedBtn.style.opacity = '0.35';
+    zoomedBtn.style.pointerEvents = 'none';
+    psSelectZoom('full');
+    document.getElementById('ps-zoom-full-sub').textContent = 'All rings 1–6';
+  } else {
+    zoomedBtn.style.opacity = '';
+    zoomedBtn.style.pointerEvents = '';
+    document.getElementById('ps-zoom-full-sub').textContent = 'All rings 1–10';
+  }
+  if (ps.mode === 'plot') {
+    document.getElementById('ps-zoom-section').style.display = f==='target' ? '' : 'none';
+  }
+}
+
+function psSelectZoom(z) {
+  ps.zoom = z;
+  document.getElementById('ps-opt-full').classList.toggle('selected', z==='full');
+  document.getElementById('ps-opt-zoomed').classList.toggle('selected', z==='zoomed');
+}
+
+function psToggleNums() {
+  ps.useNums = document.getElementById('ps-use-nums').checked;
+  document.getElementById('ps-nums-section').style.display = ps.useNums ? '' : 'none';
+  psUpdateChips();
+}
+
+function psUpdateChips() {
+  const n = parseInt(document.getElementById('ps-arrow-count').value) || 6;
+  const el = document.getElementById('ps-arrow-chips'); el.innerHTML = '';
+  ps.arrowNums = Array.from({length: n}, (_,i) => i+1);
+  ps.arrowNums.forEach(num => {
+    const c = document.createElement('div'); c.className = 'ps-arrow-chip'; c.textContent = num; el.appendChild(c);
+  });
+}
+
+function psStartSession() {
+  ps.name = document.getElementById('ps-session-name').value.trim() || 'Session';
+  ps.ape = parseInt(document.getElementById('ps-ape').value) || 6;
+  ps.useNums = document.getElementById('ps-use-nums').checked;
+  if (ps.useNums) { const n = parseInt(document.getElementById('ps-arrow-count').value)||6; ps.arrowNums = Array.from({length:n},(_,i)=>i+1); }
+  ps.ends = []; ps.currentArrows = []; ps.runningTotal = 0; ps.id = psGenId();
+  document.getElementById('ps-scoring-title').textContent = ps.name;
+  if (ps.mode === 'plot') {
+    document.getElementById('ps-score-body').style.display = 'none';
+    document.getElementById('ps-plot-body').style.display = 'flex';
+    setTimeout(psInitCanvas, 100);
+  } else {
+    document.getElementById('ps-score-body').style.display = '';
+    document.getElementById('ps-plot-body').style.display = 'none';
+    psBuildScoreBtns();
+  }
+  psUpdateHeader(); if (ps.mode==='score') psRenderHistory();
+  psShow('ps-scoring');
+}
+
+// ─── SCORE ZONES ─────────────────────────────────────────
+function psGetZones() {
+  if (ps.face === 'field') return [
+    {l:'6',v:6,c:'sz-f6'},{l:'5',v:5,c:'sz-f5'},
+    {l:'4',v:4,c:'sz-f4'},{l:'3',v:3,c:'sz-f3'},
+    {l:'2',v:2,c:'sz-f2'},{l:'1',v:1,c:'sz-f1'},{l:'M',v:0,c:'sz-m'}
+  ];
+  return [
+    {l:'X',v:10,c:'sz-x'},{l:'10',v:10,c:'sz-10'},{l:'9',v:9,c:'sz-9'},
+    {l:'8',v:8,c:'sz-8'},{l:'7',v:7,c:'sz-7'},{l:'6',v:6,c:'sz-6'},
+    {l:'5',v:5,c:'sz-5'},{l:'4',v:4,c:'sz-4'},{l:'3',v:3,c:'sz-3'},
+    {l:'2',v:2,c:'sz-2'},{l:'1',v:1,c:'sz-1'},{l:'M',v:0,c:'sz-m'}
+  ];
+}
+
+function psChipStyle(label, face) {
+  if (face==='field') {
+    if (['6','5'].includes(label)) return 'background:#f7dc1f;color:#5a4000';
+    if (['4','3','2','1'].includes(label)) return 'background:#4a90c8;color:white';
+    return 'background:#999;color:white';
+  }
+  if (['X','10','9'].includes(label)) return 'background:#f7dc1f;color:#5a4000';
+  if (['8','7'].includes(label)) return 'background:#e63946;color:white';
+  if (['6','5'].includes(label)) return 'background:#4895ef;color:white';
+  if (['4','3'].includes(label)) return 'background:#333;color:white';
+  if (['2','1'].includes(label)) return 'background:#ddd;color:#333';
+  return 'background:#999;color:white';
+}
+
+function psBuildScoreBtns() {
+  const wrap = document.getElementById('ps-score-btns'); wrap.innerHTML = '';
+  psGetZones().forEach(z => {
+    const b = document.createElement('button');
+    b.className = `score-btn ${z.c}`; b.textContent = z.l;
+    b.onclick = () => psAddScore(z.l, z.v);
+    wrap.appendChild(b);
+  });
+}
+
+function psAddScore(label, val) {
+  if (ps.currentArrows.length >= ps.ape) return;
+  if (ps.useNums) { ps.pendingLabel=label; ps.pendingVal=val; psShowAnm(); return; }
+  psPushArrow(label, val, null);
+}
+
+function psPushArrow(label, val, shaftNum) {
+  // shaftNum = physical shaft number from arrow builder (for future linking)
+  ps.currentArrows.push({label, val, shaftNum});
+  psAudio.playForScore(label);
+  psRenderCurrentArrows();
+}
+
+function psRenderCurrentArrows() {
+  const wrap = document.getElementById('ps-current-arrows');
+  if (!ps.currentArrows.length) { wrap.innerHTML = '<span style="font-family:var(--mono);font-size:12px;color:var(--dim)">Tap scores above</span>'; }
+  else {
+    wrap.innerHTML = '';
+    ps.currentArrows.forEach((a,i) => {
+      const chip = document.createElement('div'); chip.className = 'ps-arrow-chip-score';
+      chip.style.cssText = psChipStyle(a.label, ps.face); chip.textContent = a.label;
+      if (a.shaftNum !== null) { const n = document.createElement('div'); n.className = 'chip-num'; n.textContent = a.shaftNum; chip.appendChild(n); }
+      chip.onclick = () => { ps.currentArrows.splice(i,1); psRenderCurrentArrows(); psUpdateEndScore(); };
+      wrap.appendChild(chip);
+    });
+  }
+  psUpdateEndScore();
+  document.getElementById('ps-submit-btn').disabled = ps.currentArrows.length < ps.ape;
+  document.getElementById('ps-end-title').textContent = `End ${ps.ends.length+1} — ${ps.currentArrows.length}/${ps.ape}`;
+}
+
+function psUpdateEndScore() {
+  document.getElementById('ps-end-score').textContent = ps.currentArrows.reduce((s,a)=>s+a.val,0);
+}
+
+function psSubmitEnd() {
+  const score = ps.currentArrows.reduce((s,a)=>s+a.val,0);
+  ps.runningTotal += score;
+  ps.ends.push({arrows:[...ps.currentArrows], score, total: ps.runningTotal});
+  ps.currentArrows = [];
+  psRenderCurrentArrows(); psRenderHistory(); psUpdateHeader(); psAutoSave();
+}
+
+function psRenderHistory() {
+  const wrap = document.getElementById('ps-ends-history'); if (!wrap) return;
+  wrap.innerHTML = '';
+  [...ps.ends].reverse().forEach((end,ri) => {
+    const i = ps.ends.length - ri;
+    const card = document.createElement('div'); card.className = 'ps-end-card';
+    const num = document.createElement('div'); num.className = 'ps-ehc-num'; num.textContent = `End ${i}`;
+    const arrows = document.createElement('div'); arrows.className = 'ps-ehc-arrows';
+    end.arrows.forEach(a => {
+      const chip = document.createElement('div'); chip.className = 'ps-ehc-chip';
+      chip.style.cssText = psChipStyle(a.label, ps.face); chip.textContent = a.label;
+      arrows.appendChild(chip);
+    });
+    const score = document.createElement('div'); score.className = 'ps-ehc-score'; score.textContent = end.score;
+    const total = document.createElement('div'); total.className = 'ps-ehc-total'; total.textContent = end.total;
+    card.appendChild(num); card.appendChild(arrows); card.appendChild(score); card.appendChild(total);
+    wrap.appendChild(card);
+  });
+}
+
+function psUpdateHeader() {
+  document.getElementById('ps-hdr-end').textContent = ps.ends.length + 1;
+  document.getElementById('ps-hdr-total').textContent = ps.runningTotal;
+  const totalArrows = ps.ends.reduce((s,e)=>s+e.arrows.length,0);
+  document.getElementById('ps-hdr-avg').textContent = totalArrows ? (ps.runningTotal/totalArrows).toFixed(1) : '—';
+}
+
+// ─── ARROW NUMBER MODAL ───────────────────────────────────
+function psShowAnm() {
+  const grid = document.getElementById('ps-anm-grid'); grid.innerHTML = '';
+  const used = ps.currentArrows.map(a=>a.shaftNum);
+  ps.arrowNums.forEach(num => {
+    const btn = document.createElement('button');
+    btn.className = 'ps-anm-btn' + (used.includes(num) ? ' selected' : '');
+    btn.textContent = num; btn.disabled = used.includes(num);
+    btn.onclick = () => {
+      document.getElementById('ps-anm-overlay').classList.remove('open');
+      if (ps.mode === 'plot') { psCommitPlot(psCanvas.pendingNx, psCanvas.pendingNy, num); psCanvas.pendingNx=undefined; }
+      else { psPushArrow(ps.pendingLabel, ps.pendingVal, num); }
+    };
+    grid.appendChild(btn);
+  });
+  document.getElementById('ps-anm-overlay').classList.add('open');
+}
+
+document.getElementById('ps-anm-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('ps-anm-overlay')) document.getElementById('ps-anm-overlay').classList.remove('open');
+});
+
+// ─── CANVAS / PLOT ────────────────────────────────────────
+function psInitCanvas() {
+  const canvas = document.getElementById('target-canvas');
+  const wrap = canvas.parentElement;
+  let size = Math.min(wrap.clientWidth, wrap.clientHeight, 400);
+  if (size < 10) { setTimeout(psInitCanvas, 150); return; }
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  psCanvas.arrows = []; psCanvas.size = size;
+  psDrawTarget();
+  canvas.addEventListener('pointerdown', psPointerDown);
+  canvas.addEventListener('pointermove', psPointerMove);
+  canvas.addEventListener('pointerup', psPointerUp);
+  canvas.addEventListener('pointerleave', psPointerUp);
+}
+
+function psGetRings() {
+  if (ps.face==='field') return [
+    {s:6,l:'6',c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:5,l:'5',c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:4,l:'4',c:'#4a90c8',border:'rgba(255,255,255,0.5)',lc:'rgba(255,255,255,0.7)'},
+    {s:3,l:'3',c:'#4a90c8',border:'rgba(255,255,255,0.5)',lc:'rgba(255,255,255,0.7)'},
+    {s:2,l:'2',c:'#4a90c8',border:'rgba(255,255,255,0.5)',lc:'rgba(255,255,255,0.7)'},
+    {s:1,l:'1',c:'#4a90c8',border:'rgba(255,255,255,0.5)',lc:'rgba(255,255,255,0.7)'}
+  ];
+  if (ps.zoom==='zoomed') return [
+    {s:10,l:'X', c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:10,l:'10',c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:9, l:'9', c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:8, l:'8', c:'#e63946',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:7, l:'7', c:'#e63946',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:6, l:'6', c:'#4895ef',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'}
+  ];
+  return [
+    {s:10,l:'X', c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:10,l:'10',c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:9, l:'9', c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:8, l:'8', c:'#e63946',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:7, l:'7', c:'#e63946',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:6, l:'6', c:'#4895ef',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:5, l:'5', c:'#4895ef',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:4, l:'4', c:'#222',   border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.6)'},
+    {s:3, l:'3', c:'#222',   border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.6)'},
+    {s:2, l:'2', c:'#eee',   border:'rgba(0,0,0,0.2)',      lc:'rgba(0,0,0,0.5)'},
+    {s:1, l:'1', c:'#eee',   border:'rgba(0,0,0,0.2)',      lc:'rgba(0,0,0,0.5)'}
+  ];
+}
+
+function psDrawTarget() {
+  const canvas = document.getElementById('target-canvas');
+  const ctx = canvas.getContext('2d');
+  // Use logical size (pre-DPR) for all drawing
+  const size = psCanvas.size || canvas.width;
+  const cx = size/2, cy = size/2, maxR = size/2-4;
+  ctx.clearRect(0,0,size*2,size*2);
+  const rings = psGetRings();
+  for (let i=rings.length-1;i>=0;i--) {
+    const r = maxR*((i+1)/rings.length);
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.fillStyle = rings[i].c; ctx.fill();
+    const borderCol = rings[i].border || 'rgba(0,0,0,0.3)';
+    ctx.strokeStyle = borderCol; ctx.lineWidth = 1.2; ctx.stroke();
+  }
+  // Crosshairs
+  ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.8;
+  ctx.beginPath(); ctx.moveTo(cx,cy-maxR); ctx.lineTo(cx,cy+maxR); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-maxR,cy); ctx.lineTo(cx+maxR,cy); ctx.stroke();
+  // Ring score labels — positioned at right edge of each ring
+  const ringStep = maxR / rings.length;
+  const fontSize = Math.max(8, Math.round(ringStep * 0.45));
+  ctx.font = `500 ${fontSize}px IBM Plex Mono, monospace`;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  rings.forEach((ring, i) => {
+    if (!ring.l) return;
+    const outerR = maxR * ((i+1)/rings.length);
+    const innerR = maxR * (i/rings.length);
+    const midR = (outerR + innerR) / 2;
+    const labelX = cx + midR * 0.72; // slightly left of ring edge on right side
+    ctx.fillStyle = ring.lc || 'rgba(0,0,0,0.5)';
+    ctx.fillText(ring.l, labelX, cy);
+  });
+  psCanvas.arrows.forEach((a,idx) => {
+    const x=cx+a.nx*maxR, y=cy+a.ny*maxR;
+    const last=idx===psCanvas.arrows.length-1;
+    ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
+    ctx.fillStyle=last?'#ff6b00':'rgba(255,255,255,0.85)'; ctx.fill();
+    ctx.strokeStyle=last?'#c94d00':'#333'; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,1.5,0,Math.PI*2);
+    ctx.fillStyle=last?'#fff':'#111'; ctx.fill();
+    if (a.shaftNum) { ctx.fillStyle='#333'; ctx.font='bold 8px IBM Plex Mono,monospace'; ctx.textAlign='center'; ctx.fillText(a.shaftNum,x,y-12); }
+  });
+}
+
+function psScoreFromNxy(nx,ny) {
+  const dist=Math.sqrt(nx*nx+ny*ny);
+  if (dist>1) return {s:0,l:'M'};
+  const rings=psGetRings();
+  for (let i=0;i<rings.length;i++) { if (dist<=(i+1)/rings.length) return {s:rings[i].s, l:rings[i].l||(rings[i].s+'')};  }
+  const last=rings[rings.length-1]; return {s:last.s, l:last.l||(last.s+'')};
+}
+
+function psGetNxy(e) {
+  const canvas=document.getElementById('target-canvas');
+  const rect=canvas.getBoundingClientRect();
+  // Use logical display size, not physical canvas size
+  const size=psCanvas.size||rect.width;
+  const px=(e.clientX-rect.left), py=(e.clientY-rect.top);
+  const cx=size/2, cy=size/2, maxR=size/2-4;
+  return {nx:(px-cx)/maxR, ny:(py-cy)/maxR};
+}
+
+function psDrawZoom(nx,ny) {
+  const mc=document.getElementById('target-canvas');
+  const zc=document.getElementById('zoom-canvas');
+  const zctx=zc.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const displaySize=psCanvas.size||300;
+  const cx=displaySize/2, cy=displaySize/2, maxR=displaySize/2-4;
+  const px=cx+nx*maxR, py=cy+ny*maxR;
+  const zs=150, zf=5, sw=zs/zf;
+  zctx.clearRect(0,0,zs,zs);
+  zctx.save();
+  // Draw from the logical (unscaled) canvas coordinates
+  zctx.drawImage(mc, (px-sw/2)*dpr, (py-sw/2)*dpr, sw*dpr, sw*dpr, 0, 0, zs, zs);
+  zctx.restore();
+  zctx.strokeStyle='rgba(255,100,0,0.9)'; zctx.lineWidth=2;
+  zctx.beginPath(); zctx.moveTo(75,60); zctx.lineTo(75,90); zctx.stroke();
+  zctx.beginPath(); zctx.moveTo(60,75); zctx.lineTo(90,75); zctx.stroke();
+}
+
+function psPointerDown(e) {
+  e.preventDefault(); const {nx,ny}=psGetNxy(e);
+  psCanvas.pressing=true; psCanvas.nx=nx; psCanvas.ny=ny;
+  document.getElementById('ps-zoom-overlay').style.display='block';
+  psDrawTarget(); psDrawZoom(nx,ny);
+}
+function psPointerMove(e) {
+  if (!psCanvas.pressing) return; e.preventDefault();
+  const {nx,ny}=psGetNxy(e); psCanvas.nx=nx; psCanvas.ny=ny;
+  psDrawTarget(); psDrawZoom(nx,ny);
+}
+function psPointerUp(e) {
+  if (!psCanvas.pressing) return; e.preventDefault();
+  psCanvas.pressing=false;
+  document.getElementById('ps-zoom-overlay').style.display='none';
+  const nx=psCanvas.nx, ny=psCanvas.ny;
+  if (ps.currentArrows.length>=ps.ape) return;
+  if (ps.useNums) { psCanvas.pendingNx=nx; psCanvas.pendingNy=ny; psShowAnm(); return; }
+  psCommitPlot(nx,ny,null);
+}
+
+function psCommitPlot(nx,ny,shaftNum) {
+  const {s,l}=psScoreFromNxy(nx,ny);
+  psCanvas.arrows.push({nx,ny,shaftNum,s,l});
+  ps.currentArrows.push({label:l,val:s,shaftNum,nx,ny});
+  psAudio.playForScore(l);
+  psDrawTarget(); psRenderPlotArrows();
+  document.getElementById('ps-plot-next').disabled=ps.currentArrows.length<ps.ape;
+}
+
+function psUndoPlot() {
+  if (!psCanvas.arrows.length) return;
+  psCanvas.arrows.pop(); ps.currentArrows.pop();
+  psDrawTarget(); psRenderPlotArrows();
+  document.getElementById('ps-plot-next').disabled=ps.currentArrows.length<ps.ape;
+}
+
+function psRenderPlotArrows() {
+  const wrap=document.getElementById('ps-plot-arrows');
+  if (!ps.currentArrows.length) { wrap.innerHTML='<span style="font-family:var(--mono);font-size:12px;color:var(--dim)">Tap the target to plot</span>'; return; }
+  wrap.innerHTML=''; let tot=0;
+  ps.currentArrows.forEach(a => {
+    tot+=a.val;
+    const pill=document.createElement('div'); pill.className='ps-plot-pill';
+    pill.style.cssText=psChipStyle(a.label,ps.face);
+    if (a.shaftNum) { const n=document.createElement('span'); n.style.cssText='font-size:10px;opacity:0.7;margin-right:2px'; n.textContent=`#${a.shaftNum}`; pill.appendChild(n); }
+    const lbl=document.createElement('span'); lbl.textContent=a.label; pill.appendChild(lbl);
+    wrap.appendChild(pill);
+  });
+  const tot_el=document.createElement('div'); tot_el.style.cssText='margin-left:auto;font-family:var(--mono);font-weight:500;font-size:16px;color:var(--accent)'; tot_el.textContent=tot; wrap.appendChild(tot_el);
+}
+
+function psSubmitPlotEnd() {
+  const score=ps.currentArrows.reduce((s,a)=>s+a.val,0);
+  ps.runningTotal+=score;
+  ps.ends.push({arrows:ps.currentArrows.map(a=>({...a})),score,total:ps.runningTotal,plotArrows:psCanvas.arrows.map(a=>({...a}))});
+  ps.currentArrows=[]; psCanvas.arrows=[];
+  psAudio.endSubmitted();
+  psDrawTarget(); psRenderPlotArrows();
+  document.getElementById('ps-plot-next').disabled=true;
+  psUpdateHeader(); psAutoSave();
+}
+
+// ─── SESSIONS ────────────────────────────────────────────
+const PS_KEY = 'sightcalc_plotshot_sessions';
+function psLoadSessions() { try { return JSON.parse(localStorage.getItem(PS_KEY))||[]; } catch { return []; } }
+
+function psAutoSave() {
+  const sessions=psLoadSessions();
+  const data={ id:ps.id, name:ps.name, mode:ps.mode, face:ps.face, zoom:ps.zoom, ape:ps.ape, useNums:ps.useNums, arrowNums:ps.arrowNums, ends:ps.ends, runningTotal:ps.runningTotal, date:new Date().toISOString() };
+  const idx=sessions.findIndex(s=>s.id===ps.id);
+  if (idx>=0) sessions[idx]=data; else sessions.unshift(data);
+  localStorage.setItem(PS_KEY, JSON.stringify(sessions));
+}
+
+function psSaveAndExit() { psAutoSave(); psAudio.sessionSaved(); psToast('Session saved'); setTimeout(()=>psShow('ps-home'),500); }
+
+function psShowSessions() {
+  const sessions=psLoadSessions();
+  const body=document.getElementById('ps-sessions-body'); body.innerHTML='';
+  if (!sessions.length) { body.innerHTML='<div style="text-align:center;padding:3rem 1rem;font-family:var(--mono);font-size:12px;color:var(--dim)">No saved sessions yet</div>'; }
+  else {
+    sessions.forEach(s => {
+      const d=new Date(s.date);
+      const card=document.createElement('div'); card.className='ps-session-card';
+      card.innerHTML=`
+        <div class="ps-sc-top"><div class="ps-sc-name">${s.name}</div><div class="ps-sc-date">${d.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div></div>
+        <div class="ps-sc-tags">
+          <div class="ps-sc-tag">${s.mode==='plot'?'Plot & Score':'Score Only'}</div>
+          <div class="ps-sc-tag">${s.face==='field'?'Field':'Target'}</div>
+          <div class="ps-sc-tag">${s.ends.length} ends</div>
+          ${s.useNums?'<div class="ps-sc-tag">Shaft #s</div>':''}
+        </div>
+        <div class="ps-sc-score">${s.runningTotal} pts</div>
+        <div class="ps-sc-actions">
+          <button class="ps-sc-btn" onclick="psResume('${s.id}')">▶ Resume</button>
+          <button class="ps-sc-btn danger" onclick="psDeleteSession('${s.id}',this)">Delete</button>
+        </div>`;
+      body.appendChild(card);
+    });
+  }
+  psShow('ps-sessions');
+}
+
+function psResume(id) {
+  const s=psLoadSessions().find(x=>x.id===id); if (!s) return;
+  Object.assign(ps,{id:s.id,name:s.name,mode:s.mode,face:s.face,zoom:s.zoom||'full',ape:s.ape,useNums:s.useNums,arrowNums:s.arrowNums,ends:s.ends,currentArrows:[],runningTotal:s.runningTotal});
+  document.getElementById('ps-scoring-title').textContent=ps.name;
+  if (ps.mode==='plot') { document.getElementById('ps-score-body').style.display='none'; document.getElementById('ps-plot-body').style.display='flex'; psCanvas.arrows=[]; setTimeout(psInitCanvas,50); }
+  else { document.getElementById('ps-score-body').style.display=''; document.getElementById('ps-plot-body').style.display='none'; psBuildScoreBtns(); psRenderCurrentArrows(); psRenderHistory(); }
+  psUpdateHeader(); psShow('ps-scoring');
+}
+
+function psDeleteSession(id,btn) {
+  let sessions=psLoadSessions().filter(s=>s.id!==id);
+  localStorage.setItem(PS_KEY,JSON.stringify(sessions));
+  btn.closest('.ps-session-card').remove(); psToast('Deleted');
+}
+
+// ─── STATS ───────────────────────────────────────────────
+function psShowStats() {
+  const body=document.getElementById('ps-stats-body'); body.innerHTML='';
+  const totalArrows=ps.ends.reduce((s,e)=>s+e.arrows.length,0);
+  const avg=totalArrows?(ps.runningTotal/totalArrows).toFixed(2):'—';
+  const allScores=ps.ends.flatMap(e=>e.arrows.map(a=>a.val));
+  const xs=ps.ends.flatMap(e=>e.arrows.filter(a=>a.label==='X')).length;
+  const tens=ps.ends.flatMap(e=>e.arrows.filter(a=>['X','10'].includes(a.label))).length;
+  body.innerHTML=`<div class="ps-stats-grid">
+    <div class="ps-stat-card"><div class="ps-stat-val">${ps.runningTotal}</div><div class="ps-stat-lbl">Total score</div></div>
+    <div class="ps-stat-card"><div class="ps-stat-val">${avg}</div><div class="ps-stat-lbl">Arrow avg</div></div>
+    <div class="ps-stat-card"><div class="ps-stat-val">${ps.ends.length}</div><div class="ps-stat-lbl">Ends shot</div></div>
+    <div class="ps-stat-card"><div class="ps-stat-val">${totalArrows}</div><div class="ps-stat-lbl">Arrows</div></div>
+    <div class="ps-stat-card"><div class="ps-stat-val">${xs}</div><div class="ps-stat-lbl">X count</div></div>
+    <div class="ps-stat-card"><div class="ps-stat-val">${tens}</div><div class="ps-stat-lbl">10s (inc X)</div></div>
+  </div>`;
+
+  // Shaft number ranking — ready for linking to arrow builder
+  if (ps.useNums && ps.arrowNums.length) {
+    const section=document.createElement('div'); section.className='ps-arrow-rank';
+    section.innerHTML='<h3>Shaft ranking</h3>';
+    const ranks=ps.arrowNums.map(num=>{
+      const shots=ps.ends.flatMap(e=>e.arrows.filter(a=>a.shaftNum===num));
+      const avg=shots.length?shots.reduce((s,a)=>s+a.val,0)/shots.length:0;
+      return {num, avg:avg.toFixed(1), count:shots.length, shots};
+    }).sort((a,b)=>parseFloat(b.avg)-parseFloat(a.avg));
+    const maxAvg=Math.max(...ranks.map(r=>parseFloat(r.avg)),0.1);
+    ranks.forEach(r=>{
+      const row=document.createElement('div'); row.className='ps-ans-row';
+      const pct=maxAvg>0?(parseFloat(r.avg)/maxAvg*100):0;
+      row.innerHTML=`<div class="ps-ans-num">${r.num}</div>
+        <div class="ps-ans-bar-wrap"><div class="ps-ans-bar" style="width:${pct}%"></div></div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:44px;text-align:center">${r.count} shots</div>
+        <div class="ps-ans-avg">${r.avg}</div>`;
+      if (ps.mode==='plot' && r.shots.some(s=>s.nx!==undefined)) {
+        row.style.cursor='pointer';
+        row.onclick=()=>psShowPlotView(r.num,r.shots);
+      }
+      section.appendChild(row);
+    });
+    body.appendChild(section);
+  }
+  psShow('ps-stats');
+}
+
+function psShowPlotView(num,shots) {
+  document.getElementById('ps-pvm-title').textContent=`Shaft #${num} — ${shots.length} shots`;
+  const canvas=document.getElementById('pvm-canvas');
+  const ctx=canvas.getContext('2d');
+  const size=320, cx=size/2, cy=size/2, maxR=size/2-4;
+  ctx.clearRect(0,0,size,size);
+  const rings=psGetRings();
+  for (let i=rings.length-1;i>=0;i--) {
+    const r=maxR*((i+1)/rings.length);
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.fillStyle=rings[i].c; ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.lineWidth=0.5; ctx.stroke();
+  }
+  shots.forEach(s=>{
+    if (s.nx===undefined) return;
+    const x=cx+s.nx*maxR, y=cy+s.ny*maxR;
+    ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,107,0,0.8)'; ctx.fill();
+    ctx.strokeStyle='#c94d00'; ctx.lineWidth=1; ctx.stroke();
+  });
+  document.getElementById('ps-pvm-overlay').classList.add('open');
+}
+
+function psPvmClose() { document.getElementById('ps-pvm-overlay').classList.remove('open'); }
+
+
+// ─── AUDIO ENGINE ────────────────────────────────────────
+const psAudio = {
+  ctx: null,
+  init() {
+    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+  },
+  // Core tone builder
+  tone(freq, type, gainVal, duration, fadeStart, attack=0.005) {
+    this.init();
+    const ctx = this.ctx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(gainVal, ctx.currentTime + attack);
+    gain.gain.setValueAtTime(gainVal, ctx.currentTime + fadeStart);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  },
+  noise(gainVal, duration) {
+    this.init();
+    const ctx = this.ctx;
+    const bufSize = ctx.sampleRate * duration;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass'; filter.frequency.value = 300;
+    src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(gainVal, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+    src.start(ctx.currentTime);
+  },
+
+  // ── Sound events ──
+  arrowPlotted() {
+    // Short soft click — mid thud
+    this.tone(180, 'sine', 0.25, 0.12, 0.01);
+    this.noise(0.08, 0.08);
+  },
+  goldScored() {
+    // Two-tone chime — bright and satisfying
+    this.tone(880, 'sine', 0.18, 0.5, 0.05);
+    setTimeout(() => this.tone(1108, 'sine', 0.12, 0.4, 0.05), 60);
+  },
+  tenScored() {
+    // Single bright chime
+    this.tone(740, 'sine', 0.18, 0.45, 0.05);
+  },
+  missScored() {
+    // Low dull thud
+    this.tone(80, 'sine', 0.3, 0.18, 0.01, 0.01);
+    this.noise(0.12, 0.15);
+  },
+  endSubmitted() {
+    // Rising three-note chime
+    this.tone(523, 'sine', 0.15, 0.35, 0.05);
+    setTimeout(() => this.tone(659, 'sine', 0.15, 0.35, 0.05), 100);
+    setTimeout(() => this.tone(784, 'sine', 0.18, 0.5, 0.05), 200);
+  },
+  sessionSaved() {
+    // Soft descending confirmation
+    this.tone(660, 'sine', 0.12, 0.3, 0.05);
+    setTimeout(() => this.tone(523, 'sine', 0.10, 0.4, 0.05), 120);
+  },
+  playForScore(label) {
+    if (label === 'X') { this.goldScored(); return; }
+    if (label === '10') { this.tenScored(); return; }
+    if (label === 'M') { this.missScored(); return; }
+    this.arrowPlotted();
+  }
+};
+
+window.addEventListener('load', () => { /* theme applied by shared.js DOMContentLoaded */ });
+</script>
+</body>
+</html>
