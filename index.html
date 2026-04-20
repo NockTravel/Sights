@@ -355,11 +355,58 @@ function dlSVG() { const s=buildSVG(); if (!s) return; downloadBlob('sight-tape.
 function printTable() {
   if (!R) return;
   const {smm, toT, mxD, v0, tpi} = R;
-  let rows='';
-  getTableDists().forEach(d => { if (!smm[d]) return; const bold=(d===R.d1||d===R.d2||d===18||d===R.pkD)?'font-weight:700;':''; rows+=`<tr style="${bold}"><td>${d} ${unitLabel()}</td><td>${toDisplay(toT(smm[d]))}</td></tr>`; });
-  const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>SightCalc</title><style>body{font-family:'IBM Plex Mono',monospace;font-size:12pt;margin:15mm;}h2{font-size:14pt;margin-bottom:4px;}p{font-size:9pt;color:#666;margin-bottom:12px;}table{border-collapse:collapse;min-width:200px;}th{text-align:left;font-size:9pt;color:#666;padding:4px 16px 4px 0;border-bottom:1px solid #ccc;}td{padding:4px 16px 4px 0;}tr:nth-child(even) td{background:#f8f8f8;}@page{margin:15mm;size:A4;}</style></head><body><h2>SightCalc — Sight Settings</h2><p>Speed: ${v0.toFixed(1)} m/s | ${tpi} TPI</p><table><thead><tr><th>Distance</th><th>Setting</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=function(){window.print();}<\/script></body></html>`);
-  w.document.close();
+  const dists = getTableDists().filter(d => smm[d]);
+  const use1m = tableInterval === 1;
+
+  if (use1m && dists.length > 30) {
+    // Multi-column layout for 1m increments
+    const cols = dists.length > 60 ? 3 : 2;
+    const perCol = Math.ceil(dists.length / cols);
+    const colArrays = Array.from({length: cols}, (_, i) => dists.slice(i*perCol, (i+1)*perCol));
+    let tableHTML = '<table><thead><tr>';
+    for (let i=0; i<cols; i++) tableHTML += '<th>Dist</th><th>Setting</th>';
+    tableHTML += '</tr></thead><tbody>';
+    for (let row=0; row<perCol; row++) {
+      tableHTML += '<tr>';
+      for (let col=0; col<cols; col++) {
+        const d = colArrays[col]?.[row];
+        if (d !== undefined) {
+          const bold = (d===R.d1||d===R.d2||d===18||d===R.pkD) ? 'font-weight:700;' : '';
+          tableHTML += `<td style="${bold}">${d} ${unitLabel()}</td><td style="${bold}">${toDisplay(toT(smm[d]))}</td>`;
+        } else {
+          tableHTML += '<td></td><td></td>';
+        }
+      }
+      tableHTML += '</tr>';
+    }
+    tableHTML += '</tbody></table>';
+    const w = window.open('','_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>SightCalc</title><style>
+      body{font-family:'IBM Plex Mono',monospace;font-size:10pt;margin:12mm;}
+      h2{font-size:13pt;margin-bottom:4px;}
+      p{font-size:8pt;color:#666;margin-bottom:10px;}
+      table{border-collapse:collapse;width:100%;}
+      th{text-align:left;font-size:8pt;color:#666;padding:3px 10px 3px 0;border-bottom:1px solid #ccc;}
+      td{padding:3px 10px 3px 0;border-bottom:1px solid #eee;}
+      tr:nth-child(even) td{background:#f8f8f8;}
+      @page{margin:12mm;size:A4;}
+    </style></head><body>
+    <h2>SightCalc — Sight Settings</h2>
+    <p>Speed: ${v0.toFixed(1)} m/s | ${tpi} TPI | ${cols}-column layout</p>
+    ${tableHTML}
+    <script>window.onload=function(){window.print();}<\/script></body></html>`);
+    w.document.close();
+  } else {
+    // Single column for 5m increments
+    let rows = '';
+    dists.forEach(d => {
+      const bold = (d===R.d1||d===R.d2||d===18||d===R.pkD) ? 'font-weight:700;' : '';
+      rows += `<tr style="${bold}"><td>${d} ${unitLabel()}</td><td>${toDisplay(toT(smm[d]))}</td></tr>`;
+    });
+    const w = window.open('','_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>SightCalc</title><style>body{font-family:'IBM Plex Mono',monospace;font-size:12pt;margin:15mm;}h2{font-size:14pt;margin-bottom:4px;}p{font-size:9pt;color:#666;margin-bottom:12px;}table{border-collapse:collapse;min-width:200px;}th{text-align:left;font-size:9pt;color:#666;padding:4px 16px 4px 0;border-bottom:1px solid #ccc;}td{padding:4px 16px 4px 0;}tr:nth-child(even) td{background:#f8f8f8;}@page{margin:15mm;size:A4;}</style></head><body><h2>SightCalc — Sight Settings</h2><p>Speed: ${v0.toFixed(1)} m/s | ${tpi} TPI</p><table><thead><tr><th>Distance</th><th>Setting</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=function(){window.print();}<\/script></body></html>`);
+    w.document.close();
+  }
 }
 
 function exportCSV() {
