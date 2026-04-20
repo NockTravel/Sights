@@ -18,8 +18,7 @@
   .sz-2, .sz-1          { background:#dddddd !important; color:#333 !important; }
   .sz-m                 { background:#999999 !important; color:white !important; }
   .sz-f6,.sz-f5  { background:#f7dc1f !important; color:#5a4000 !important; }
-  .sz-f4,.sz-f3  { background:#111111 !important; color:white !important; }
-  .sz-f2,.sz-f1  { background:#dddddd !important; color:#333333 !important; }
+  .sz-f4,.sz-f3,.sz-f2,.sz-f1  { background:#4a90c8 !important; color:white !important; }
 
   /* Screen system */
   .ps-screen { display: none; min-height: calc(100vh - 52px); flex-direction: column; }
@@ -473,8 +472,7 @@ function psGetZones() {
 function psChipStyle(label, face) {
   if (face==='field') {
     if (['6','5'].includes(label)) return 'background:#f7dc1f;color:#5a4000';
-    if (['4','3'].includes(label)) return 'background:#111;color:white';
-    if (['2','1'].includes(label)) return 'background:#dddddd;color:#333';
+    if (['4','3','2','1'].includes(label)) return 'background:#4a90c8;color:white';
     return 'background:#999;color:white';
   }
   if (['X','10','9'].includes(label)) return 'background:#f7dc1f;color:#5a4000';
@@ -609,22 +607,33 @@ function psInitCanvas() {
 
 function psGetRings() {
   if (ps.face==='field') return [
-    {s:6,c:'#f7dc1f',border:'rgba(0,0,0,0.3)'},
-    {s:5,c:'#f7dc1f',border:'rgba(0,0,0,0.3)'},
-    {s:4,c:'#1a1a1a',border:'rgba(255,255,255,0.6)'},
-    {s:3,c:'#1a1a1a',border:'rgba(255,255,255,0.6)'},
-    {s:2,c:'#1a1a1a',border:'rgba(255,255,255,0.6)'},
-    {s:1,c:'#1a1a1a',border:'rgba(255,255,255,0.6)'}
+    {s:6,l:'6',c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:5,l:'5',c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:4,l:'4',c:'#4a90c8',border:'rgba(255,255,255,0.5)',lc:'rgba(255,255,255,0.7)'},
+    {s:3,l:'3',c:'#4a90c8',border:'rgba(255,255,255,0.5)',lc:'rgba(255,255,255,0.7)'},
+    {s:2,l:'2',c:'#4a90c8',border:'rgba(255,255,255,0.5)',lc:'rgba(255,255,255,0.7)'},
+    {s:1,l:'1',c:'#4a90c8',border:'rgba(255,255,255,0.5)',lc:'rgba(255,255,255,0.7)'}
   ];
   if (ps.zoom==='zoomed') return [
-    {s:10,l:'X',c:'#f7dc1f'},{s:10,c:'#f7dc1f'},{s:9,c:'#f7dc1f'},
-    {s:8,c:'#e63946'},{s:7,c:'#e63946'},{s:6,c:'#4895ef'}
+    {s:10,l:'X', c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:10,l:'10',c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:9, l:'9', c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:8, l:'8', c:'#e63946',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:7, l:'7', c:'#e63946',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:6, l:'6', c:'#4895ef',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'}
   ];
   return [
-    {s:10,l:'X',c:'#f7dc1f'},{s:10,c:'#f7dc1f'},{s:9,c:'#f7dc1f'},
-    {s:8,c:'#e63946'},{s:7,c:'#e63946'},{s:6,c:'#4895ef'},
-    {s:5,c:'#4895ef'},{s:4,c:'#222'},{s:3,c:'#222'},
-    {s:2,c:'#eee'},{s:1,c:'#eee'}
+    {s:10,l:'X', c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:10,l:'10',c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:9, l:'9', c:'#f7dc1f',border:'rgba(0,0,0,0.25)',lc:'#5a4000'},
+    {s:8, l:'8', c:'#e63946',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:7, l:'7', c:'#e63946',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:6, l:'6', c:'#4895ef',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:5, l:'5', c:'#4895ef',border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.8)'},
+    {s:4, l:'4', c:'#222',   border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.6)'},
+    {s:3, l:'3', c:'#222',   border:'rgba(255,255,255,0.4)',lc:'rgba(255,255,255,0.6)'},
+    {s:2, l:'2', c:'#eee',   border:'rgba(0,0,0,0.2)',      lc:'rgba(0,0,0,0.5)'},
+    {s:1, l:'1', c:'#eee',   border:'rgba(0,0,0,0.2)',      lc:'rgba(0,0,0,0.5)'}
   ];
 }
 
@@ -644,17 +653,32 @@ function psDrawTarget() {
     ctx.strokeStyle = borderCol; ctx.lineWidth = 1.2; ctx.stroke();
   }
   // Crosshairs
-  ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.lineWidth=0.8;
+  ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.8;
   ctx.beginPath(); ctx.moveTo(cx,cy-maxR); ctx.lineTo(cx,cy+maxR); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(cx-maxR,cy); ctx.lineTo(cx+maxR,cy); ctx.stroke();
+  // Ring score labels — positioned at right edge of each ring
+  const ringStep = maxR / rings.length;
+  const fontSize = Math.max(8, Math.round(ringStep * 0.45));
+  ctx.font = `500 ${fontSize}px IBM Plex Mono, monospace`;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  rings.forEach((ring, i) => {
+    if (!ring.l) return;
+    const outerR = maxR * ((i+1)/rings.length);
+    const innerR = maxR * (i/rings.length);
+    const midR = (outerR + innerR) / 2;
+    const labelX = cx + midR * 0.72; // slightly left of ring edge on right side
+    ctx.fillStyle = ring.lc || 'rgba(0,0,0,0.5)';
+    ctx.fillText(ring.l, labelX, cy);
+  });
   psCanvas.arrows.forEach((a,idx) => {
     const x=cx+a.nx*maxR, y=cy+a.ny*maxR;
     const last=idx===psCanvas.arrows.length-1;
-    ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2);
-    ctx.fillStyle=last?'#ff6b00':'rgba(255,255,255,0.9)'; ctx.fill();
-    ctx.strokeStyle=last?'#c94d00':'#444'; ctx.lineWidth=1.5; ctx.stroke();
-    ctx.beginPath(); ctx.arc(x,y,2,0,Math.PI*2);
-    ctx.fillStyle=last?'#fff':'#222'; ctx.fill();
+    ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
+    ctx.fillStyle=last?'#ff6b00':'rgba(255,255,255,0.85)'; ctx.fill();
+    ctx.strokeStyle=last?'#c94d00':'#333'; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,1.5,0,Math.PI*2);
+    ctx.fillStyle=last?'#fff':'#111'; ctx.fill();
     if (a.shaftNum) { ctx.fillStyle='#333'; ctx.font='bold 8px IBM Plex Mono,monospace'; ctx.textAlign='center'; ctx.fillText(a.shaftNum,x,y-12); }
   });
 }
