@@ -303,7 +303,10 @@
       <div class="ps-plot-arrows" id="ps-plot-arrows">
         <span style="font-family:var(--mono);font-size:12px;color:var(--dim)">Tap the target to plot</span>
       </div>
-      <div class="ps-plot-actions">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+        <button class="ps-undo-btn" id="ps-group-toggle" onclick="psToggleGroup()" style="font-size:11px;padding:5px 10px;color:var(--accent);border-color:var(--accent)">⊕ Group: On</button>
+      </div>
+    <div class="ps-plot-actions">
         <button class="ps-undo-btn" onclick="psUndoPlot()">↩ Undo</button>
         <button class="ps-plot-next" id="ps-plot-next" onclick="psSubmitPlotEnd()" disabled>Next End →</button>
       </div>
@@ -331,6 +334,7 @@
   <div class="ps-inner-header">
     <button class="ps-back" onclick="psShow('ps-scoring')">←</button>
     <div class="ps-inner-header-title">Statistics</div>
+    <button class="ps-undo-btn" onclick="psToggleGroup();psShowStats()" style="font-size:11px;padding:5px 10px">⊕ Group</button>
   </div>
   <div class="ps-stats-body" id="ps-stats-body"></div>
 </div>
@@ -348,7 +352,10 @@
   <div class="ps-pvm-inner">
     <div class="ps-pvm-title" id="ps-pvm-title">Arrow #1 — all shots</div>
     <canvas id="pvm-canvas" width="320" height="320" style="border-radius:50%;display:block;margin:0 auto"></canvas>
-    <button class="ps-pvm-close" onclick="psPvmClose()">Close</button>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="ps-pvm-close" style="flex:1" onclick="psToggleGroup();psPvmRefresh()">⊕ Group</button>
+      <button class="ps-pvm-close" style="flex:1" onclick="psPvmClose()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -460,6 +467,21 @@ function psStartSession() {
   psShow('ps-scoring');
 }
 
+
+
+// ─── GROUP TOGGLE ─────────────────────────────────────────
+let psShowGroup = true;
+
+function psToggleGroup() {
+  psShowGroup = !psShowGroup;
+  const btn = document.getElementById('ps-group-toggle');
+  if (btn) {
+    btn.textContent = psShowGroup ? '⊕ Group: On' : '⊕ Group: Off';
+    btn.style.color = psShowGroup ? 'var(--accent)' : 'var(--muted)';
+    btn.style.borderColor = psShowGroup ? 'var(--accent)' : 'var(--border2)';
+  }
+  psDrawTarget();
+}
 
 // ─── GROUP ANALYSIS ──────────────────────────────────────
 function psDrawGroup(ctx, cx, cy, maxR, arrows, alpha=1) {
@@ -739,7 +761,7 @@ function psDrawTarget() {
     if (a.shaftNum) { ctx.fillStyle='#333'; ctx.font='bold 8px IBM Plex Mono,monospace'; ctx.textAlign='center'; ctx.fillText(a.shaftNum,x,y-12); }
   });
   // Draw live group overlay
-  psDrawGroup(ctx, cx, cy, maxR, psCanvas.arrows);
+  if (psShowGroup) psDrawGroup(ctx, cx, cy, maxR, psCanvas.arrows);
 }
 
 function psScoreFromNxy(nx,ny) {
@@ -910,7 +932,7 @@ function psShowEndReview(idx) {
     if (a.shaftNum) { ctx.fillStyle='#333'; ctx.font='bold 8px IBM Plex Mono,monospace'; ctx.textAlign='center'; ctx.fillText(a.shaftNum,x,y-10); }
   });
   // Group overlay for this end
-  psDrawGroup(ctx, cx, cy, maxR, end.plotArrows);
+  if (psShowGroup) psDrawGroup(ctx, cx, cy, maxR, end.plotArrows);
 
   label.textContent = `End ${idx+1} of ${ps.ends.length}`;
   document.getElementById('ps-nav-prev').disabled = idx === 0;
@@ -1095,7 +1117,7 @@ function psShowStats() {
     });
 
     // Overall group overlay
-    psDrawGroup(ctx, cx, cy, maxR, allPlotArrows);
+    if (psShowGroup) psDrawGroup(ctx, cx, cy, maxR, allPlotArrows);
 
     wrap.appendChild(canvas);
     plotSection.appendChild(wrap);
@@ -1117,7 +1139,9 @@ function psShowStats() {
   psShow('ps-stats');
 }
 
+let psPvmCurrent = null;
 function psShowPlotView(num,shots) {
+  psPvmCurrent = {num, shots};
   document.getElementById('ps-pvm-title').textContent=`Arrow #${num} — ${shots.length} shots`;
   const canvas=document.getElementById('pvm-canvas');
   const ctx=canvas.getContext('2d');
@@ -1133,14 +1157,20 @@ function psShowPlotView(num,shots) {
   shots.forEach(s=>{
     if (s.nx===undefined) return;
     const x=cx+s.nx*maxR, y=cy+s.ny*maxR;
-    ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,107,0,0.8)'; ctx.fill();
-    ctx.strokeStyle='#c94d00'; ctx.lineWidth=1; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,107,0,0.85)'; ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.5)'; ctx.lineWidth=0.8; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,1,0,Math.PI*2);
+    ctx.fillStyle='#fff'; ctx.fill();
   });
+  if (psShowGroup) psDrawGroup(ctx, cx, cy, maxR, shots.filter(s=>s.nx!==undefined).map(s=>({nx:s.nx,ny:s.ny})));
   document.getElementById('ps-pvm-overlay').classList.add('open');
 }
 
 function psPvmClose() { document.getElementById('ps-pvm-overlay').classList.remove('open'); }
+function psPvmRefresh() {
+  if (psPvmCurrent) psShowPlotView(psPvmCurrent.num, psPvmCurrent.shots);
+}
 
 
 // ─── AUDIO ENGINE ────────────────────────────────────────
