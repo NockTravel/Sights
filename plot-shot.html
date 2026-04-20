@@ -138,9 +138,9 @@
   /* Plot view modal */
   .ps-pvm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 400; align-items: center; justify-content: center; }
   .ps-pvm-overlay.open { display: flex; }
-  .ps-pvm-inner { background: #1a1a1a; border-radius: 12px; padding: 1.25rem; width: 90vw; max-width: 380px; }
-  .ps-pvm-title { color: white; font-family: var(--mono); font-size: 13px; font-weight: 500; margin-bottom: 12px; text-align: center; }
-  .ps-pvm-close { background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 6px; padding: 10px; font-family: var(--mono); font-size: 12px; cursor: pointer; margin-top: 12px; width: 100%; }
+  .ps-pvm-inner { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; width: 90vw; max-width: 380px; }
+  .ps-pvm-title { color: var(--text); font-family: var(--mono); font-size: 13px; font-weight: 500; margin-bottom: 12px; text-align: center; }
+  .ps-pvm-close { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 10px; font-family: var(--mono); font-size: 12px; cursor: pointer; margin-top: 12px; width: 100%; }
 
   /* Toast */
   .ps-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 20px; font-family: var(--mono); font-size: 12px; z-index: 500; transition: transform 0.3s; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
@@ -1144,16 +1144,40 @@ function psShowPlotView(num,shots) {
   psPvmCurrent = {num, shots};
   document.getElementById('ps-pvm-title').textContent=`Arrow #${num} — ${shots.length} shots`;
   const canvas=document.getElementById('pvm-canvas');
+  const dpr=window.devicePixelRatio||1;
+  const displaySize=Math.min(window.innerWidth-60,320);
+  canvas.width=displaySize*dpr; canvas.height=displaySize*dpr;
+  canvas.style.width=displaySize+'px'; canvas.style.height=displaySize+'px';
   const ctx=canvas.getContext('2d');
-  const size=320, cx=size/2, cy=size/2, maxR=size/2-4;
+  ctx.scale(dpr,dpr);
+  const size=displaySize, cx=size/2, cy=size/2, maxR=size/2-4;
   ctx.clearRect(0,0,size,size);
+  // Same rings as main canvas
   const rings=psGetRings();
   for (let i=rings.length-1;i>=0;i--) {
     const r=maxR*((i+1)/rings.length);
     ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
     ctx.fillStyle=rings[i].c; ctx.fill();
-    ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.lineWidth=0.5; ctx.stroke();
+    const bc=rings[i].border||'rgba(0,0,0,0.3)';
+    ctx.strokeStyle=bc; ctx.lineWidth=1.2; ctx.stroke();
   }
+  // Crosshairs
+  ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.8;
+  ctx.beginPath(); ctx.moveTo(cx,cy-maxR); ctx.lineTo(cx,cy+maxR); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-maxR,cy); ctx.lineTo(cx+maxR,cy); ctx.stroke();
+  // Ring labels
+  const ringStep=maxR/rings.length;
+  const fontSize=Math.max(7,Math.round(ringStep*0.38));
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  rings.forEach((ring,i)=>{
+    if (!ring.l) return;
+    const outerR=maxR*((i+1)/rings.length), innerR=i>0?maxR*(i/rings.length):0;
+    const midR=(outerR+innerR)/2;
+    ctx.font=`500 ${fontSize}px IBM Plex Mono,monospace`;
+    ctx.fillStyle=ring.lc||'rgba(0,0,0,0.5)';
+    ctx.fillText(ring.l,cx+midR,cy);
+  });
+  // Arrows
   shots.forEach(s=>{
     if (s.nx===undefined) return;
     const x=cx+s.nx*maxR, y=cy+s.ny*maxR;
@@ -1163,7 +1187,7 @@ function psShowPlotView(num,shots) {
     ctx.beginPath(); ctx.arc(x,y,1,0,Math.PI*2);
     ctx.fillStyle='#fff'; ctx.fill();
   });
-  if (psShowGroup) psDrawGroup(ctx, cx, cy, maxR, shots.filter(s=>s.nx!==undefined).map(s=>({nx:s.nx,ny:s.ny})));
+  if (psShowGroup) psDrawGroup(ctx,cx,cy,maxR,shots.filter(s=>s.nx!==undefined).map(s=>({nx:s.nx,ny:s.ny})));
   document.getElementById('ps-pvm-overlay').classList.add('open');
 }
 
