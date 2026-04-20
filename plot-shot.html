@@ -247,7 +247,7 @@
     <div class="ps-setup-section">
       <h3>Arrow numbers</h3>
       <div class="ps-toggle-row">
-        <span>Track individual shaft numbers</span>
+        <span>Track individual arrow numbers</span>
         <label class="switch"><input type="checkbox" id="ps-use-nums" onchange="psToggleNums()"><span class="switch-track"></span></label>
       </div>
       <div id="ps-nums-section" style="display:none;margin-top:10px">
@@ -338,7 +338,7 @@
 <!-- Arrow number modal -->
 <div class="ps-anm-overlay" id="ps-anm-overlay">
   <div class="ps-anm-sheet">
-    <h3>Which shaft number?</h3>
+    <h3>Which arrow number?</h3>
     <div class="ps-anm-grid" id="ps-anm-grid"></div>
   </div>
 </div>
@@ -346,7 +346,7 @@
 <!-- Plot view modal -->
 <div class="ps-pvm-overlay" id="ps-pvm-overlay">
   <div class="ps-pvm-inner">
-    <div class="ps-pvm-title" id="ps-pvm-title">Shaft #1 — all shots</div>
+    <div class="ps-pvm-title" id="ps-pvm-title">Arrow #1 — all shots</div>
     <canvas id="pvm-canvas" width="320" height="320" style="border-radius:50%;display:block;margin:0 auto"></canvas>
     <button class="ps-pvm-close" onclick="psPvmClose()">Close</button>
   </div>
@@ -958,7 +958,7 @@ function psShowSessions() {
           <div class="ps-sc-tag">${s.mode==='plot'?'Plot & Score':'Score Only'}</div>
           <div class="ps-sc-tag">${s.face==='field'?'Field':'Target'}</div>
           <div class="ps-sc-tag">${s.ends.length} ends</div>
-          ${s.useNums?'<div class="ps-sc-tag">Shaft #s</div>':''}
+          ${s.useNums?'<div class="ps-sc-tag">Arrow #s</div>':''}
         </div>
         <div class="ps-sc-score">${s.runningTotal} pts</div>
         <div class="ps-sc-actions">
@@ -1006,7 +1006,7 @@ function psShowStats() {
   // Shaft number ranking — ready for linking to arrow builder
   if (ps.useNums && ps.arrowNums.length) {
     const section=document.createElement('div'); section.className='ps-arrow-rank';
-    section.innerHTML='<h3>Shaft ranking</h3>';
+    section.innerHTML='<h3>Arrow ranking</h3>';
     const ranks=ps.arrowNums.map(num=>{
       const shots=ps.ends.flatMap(e=>e.arrows.filter(a=>a.shaftNum===num));
       const avg=shots.length?shots.reduce((s,a)=>s+a.val,0)/shots.length:0;
@@ -1118,7 +1118,7 @@ function psShowStats() {
 }
 
 function psShowPlotView(num,shots) {
-  document.getElementById('ps-pvm-title').textContent=`Shaft #${num} — ${shots.length} shots`;
+  document.getElementById('ps-pvm-title').textContent=`Arrow #${num} — ${shots.length} shots`;
   const canvas=document.getElementById('pvm-canvas');
   const ctx=canvas.getContext('2d');
   const size=320, cx=size/2, cy=size/2, maxR=size/2-4;
