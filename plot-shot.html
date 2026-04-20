@@ -307,6 +307,12 @@
         <button class="ps-undo-btn" onclick="psUndoPlot()">↩ Undo</button>
         <button class="ps-plot-next" id="ps-plot-next" onclick="psSubmitPlotEnd()" disabled>Next End →</button>
       </div>
+      <div id="ps-end-nav" style="display:none;margin-top:8px;align-items:center;gap:8px">
+        <button class="ps-undo-btn" onclick="psNavEnd(-1)" id="ps-nav-prev">← Prev</button>
+        <div style="flex:1;text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted)" id="ps-nav-label">End 1</div>
+        <button class="ps-undo-btn" onclick="psNavEnd(1)" id="ps-nav-next">Next →</button>
+        <button class="ps-undo-btn" onclick="psNavEnd(0)" id="ps-nav-current" style="color:var(--accent);border-color:var(--accent)">Live</button>
+      </div>
     </div>
   </div>
 </div>
@@ -452,6 +458,54 @@ function psStartSession() {
   }
   psUpdateHeader(); if (ps.mode==='score') psRenderHistory();
   psShow('ps-scoring');
+}
+
+
+// ─── GROUP ANALYSIS ──────────────────────────────────────
+function psDrawGroup(ctx, cx, cy, maxR, arrows, alpha=1) {
+  if (!arrows || arrows.length < 2) return;
+  const pts = arrows.filter(a => a.nx !== undefined && Math.sqrt(a.nx*a.nx+a.ny*a.ny) <= 1.02);
+  if (pts.length < 2) return;
+
+  // Group centre
+  const mx = pts.reduce((s,a)=>s+a.nx,0)/pts.length;
+  const my = pts.reduce((s,a)=>s+a.ny,0)/pts.length;
+  const gcx = cx + mx*maxR, gcy = cy + my*maxR;
+
+  // Draw centre crosshair
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.85;
+  ctx.strokeStyle = '#00e5ff';
+  ctx.lineWidth = 1.2;
+  const arm = 7;
+  ctx.beginPath(); ctx.moveTo(gcx-arm,gcy); ctx.lineTo(gcx+arm,gcy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(gcx,gcy-arm); ctx.lineTo(gcx,gcy+arm); ctx.stroke();
+  ctx.beginPath(); ctx.arc(gcx,gcy,3,0,Math.PI*2);
+  ctx.fillStyle='#00e5ff'; ctx.fill();
+
+  if (pts.length >= 3) {
+    // Covariance ellipse
+    const varX = pts.reduce((s,a)=>s+(a.nx-mx)*(a.nx-mx),0)/pts.length;
+    const varY = pts.reduce((s,a)=>s+(a.ny-my)*(a.ny-my),0)/pts.length;
+    const covXY = pts.reduce((s,a)=>s+(a.nx-mx)*(a.ny-my),0)/pts.length;
+    // Eigenvalues
+    const avg = (varX+varY)/2;
+    const diff = Math.sqrt(Math.max(0,((varX-varY)/2)*((varX-varY)/2)+covXY*covXY));
+    const l1 = Math.sqrt(Math.max(0.0001, avg+diff));
+    const l2 = Math.sqrt(Math.max(0.0001, avg-diff));
+    const angle = Math.atan2(2*covXY, varX-varY)/2;
+    const scale = 2.0; // 2 sigma ellipse
+    ctx.globalAlpha = alpha * 0.25;
+    ctx.fillStyle = '#00e5ff';
+    ctx.beginPath();
+    ctx.ellipse(gcx, gcy, Math.max(3, l1*maxR*scale), Math.max(2, l2*maxR*scale), angle, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = alpha * 0.55;
+    ctx.strokeStyle = '#00e5ff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 // ─── SCORE ZONES ─────────────────────────────────────────
@@ -684,6 +738,8 @@ function psDrawTarget() {
     ctx.fillStyle=last?'#fff':'#111'; ctx.fill();
     if (a.shaftNum) { ctx.fillStyle='#333'; ctx.font='bold 8px IBM Plex Mono,monospace'; ctx.textAlign='center'; ctx.fillText(a.shaftNum,x,y-12); }
   });
+  // Draw live group overlay
+  psDrawGroup(ctx, cx, cy, maxR, psCanvas.arrows);
 }
 
 function psScoreFromNxy(nx,ny) {
@@ -781,9 +837,97 @@ function psSubmitPlotEnd() {
   ps.ends.push({arrows:ps.currentArrows.map(a=>({...a})),score,total:ps.runningTotal,plotArrows:psCanvas.arrows.map(a=>({...a}))});
   ps.currentArrows=[]; psCanvas.arrows=[];
   psAudio.endSubmitted();
+  psViewingEnd = null;
   psDrawTarget(); psRenderPlotArrows();
   document.getElementById('ps-plot-next').disabled=true;
-  psUpdateHeader(); psAutoSave();
+  psUpdateHeader(); psAutoSave(); psUpdateEndNav();
+}
+
+
+// ─── END NAVIGATION ──────────────────────────────────────
+let psViewingEnd = null; // null = live current end
+
+function psNavEnd(dir) {
+  const total = ps.ends.length;
+  if (total === 0) return;
+  if (dir === 0) {
+    // Return to live
+    psViewingEnd = null;
+    psCanvas.arrows = [];
+    psDrawTarget();
+    psRenderPlotArrows();
+    document.getElementById('ps-nav-label').textContent = 'Live';
+    document.getElementById('ps-nav-current').style.display = '';
+    return;
+  }
+  if (psViewingEnd === null) psViewingEnd = total - 1;
+  else psViewingEnd = Math.max(0, Math.min(total-1, psViewingEnd + dir));
+  psShowEndReview(psViewingEnd);
+}
+
+function psShowEndReview(idx) {
+  const end = ps.ends[idx];
+  if (!end || !end.plotArrows) return;
+  const label = document.getElementById('ps-nav-label');
+  const canvas = document.getElementById('target-canvas');
+  const size = psCanvas.size || 300;
+  const cx = size/2, cy = size/2, maxR = size/2-4;
+  const ctx = canvas.getContext('2d');
+
+  // Redraw target clean
+  const rings = psGetRings();
+  ctx.clearRect(0,0,size*2,size*2);
+  for (let i=rings.length-1;i>=0;i--) {
+    const r = maxR*((i+1)/rings.length);
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.fillStyle=rings[i].c; ctx.fill();
+    const bc=rings[i].border||'rgba(0,0,0,0.3)';
+    ctx.strokeStyle=bc; ctx.lineWidth=1.2; ctx.stroke();
+  }
+  ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.8;
+  ctx.beginPath(); ctx.moveTo(cx,cy-maxR); ctx.lineTo(cx,cy+maxR); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-maxR,cy); ctx.lineTo(cx+maxR,cy); ctx.stroke();
+  // Labels
+  const ringStep = maxR/rings.length;
+  const fontSize = Math.max(7, Math.round(ringStep*0.38));
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  rings.forEach((ring,i) => {
+    if (!ring.l) return;
+    const outerR=maxR*((i+1)/rings.length), innerR=i>0?maxR*(i/rings.length):0;
+    const midR=(outerR+innerR)/2;
+    ctx.font=`500 ${fontSize}px IBM Plex Mono,monospace`;
+    ctx.fillStyle=ring.lc||'rgba(0,0,0,0.5)';
+    ctx.fillText(ring.l, cx+midR, cy);
+  });
+  // Draw arrows for this end
+  end.plotArrows.forEach((a,i) => {
+    const x=cx+a.nx*maxR, y=cy+a.ny*maxR;
+    ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=0.8; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,1,0,Math.PI*2);
+    ctx.fillStyle='#111'; ctx.fill();
+    if (a.shaftNum) { ctx.fillStyle='#333'; ctx.font='bold 8px IBM Plex Mono,monospace'; ctx.textAlign='center'; ctx.fillText(a.shaftNum,x,y-10); }
+  });
+  // Group overlay for this end
+  psDrawGroup(ctx, cx, cy, maxR, end.plotArrows);
+
+  label.textContent = `End ${idx+1} of ${ps.ends.length}`;
+  document.getElementById('ps-nav-prev').disabled = idx === 0;
+  document.getElementById('ps-nav-next').disabled = idx === ps.ends.length-1;
+  document.getElementById('ps-nav-current').style.display = '';
+}
+
+function psUpdateEndNav() {
+  const nav = document.getElementById('ps-end-nav');
+  if (ps.mode === 'plot' && ps.ends.length > 0) {
+    nav.style.display = 'flex';
+  } else {
+    nav.style.display = 'none';
+  }
+  if (psViewingEnd === null) {
+    document.getElementById('ps-nav-label').textContent = 'Live';
+  }
 }
 
 // ─── SESSIONS ────────────────────────────────────────────
