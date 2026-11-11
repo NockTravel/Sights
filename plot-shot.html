@@ -180,6 +180,11 @@
   .ps-inner-header-title { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
   .ps-inner-header-actions { display: flex; gap: 6px; }
 
+  /* Export sheet */
+  .ps-exp-btn { width:100%; text-align:left; background:var(--surface2); border:1px solid var(--border2); color:var(--text); border-radius:6px; padding:14px; font-family:var(--mono); font-size:13px; cursor:pointer; margin-bottom:8px; transition:all 0.15s; }
+  .ps-exp-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .ps-exp-btn small { display:block; color:var(--muted); font-size:10px; margin-top:3px; }
+
   @media (max-width: 600px) {
     .ps-stats-grid { grid-template-columns: repeat(2,1fr); }
     .score-btn { width: 46px; height: 46px; font-size: 13px; }
@@ -289,12 +294,20 @@
     </div>
     <div class="ps-setup-section">
       <h3>Arrow numbers</h3>
-      <div class="ps-toggle-row">
-        <span>Track individual arrow numbers</span>
-        <label class="switch"><input type="checkbox" id="ps-use-nums" onchange="psToggleNums()"><span class="switch-track"></span></label>
+      <div class="ps-option-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="ps-option-btn selected" id="ps-num-off" onclick="psSetNumMode('off')">
+          <div class="ob-label">Off</div><div class="ob-sub">No numbers</div>
+        </div>
+        <div class="ps-option-btn" id="ps-num-auto" onclick="psSetNumMode('auto')">
+          <div class="ob-label">Auto</div><div class="ob-sub">1,2,3… in order</div>
+        </div>
+        <div class="ps-option-btn" id="ps-num-shaft" onclick="psSetNumMode('shaft')">
+          <div class="ob-label">Shaft #s</div><div class="ob-sub">Pick each</div>
+        </div>
       </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px" id="ps-num-hint"></div>
       <div id="ps-nums-section" style="display:none;margin-top:10px">
-        <div class="field" style="margin-bottom:8px"><label>How many arrows?</label><input type="number" id="ps-arrow-count" value="6" min="1" max="24" oninput="psUpdateChips()"></div>
+        <div class="field" style="margin-bottom:8px"><label>How many arrows in the set?</label><input type="number" id="ps-arrow-count" value="6" min="1" max="24" oninput="psUpdateChips()"></div>
         <div class="ps-arrow-chips" id="ps-arrow-chips"></div>
       </div>
     </div>
@@ -309,6 +322,7 @@
     <div class="ps-inner-header-title" id="ps-scoring-title">Session</div>
     <div class="ps-inner-header-actions">
       <button class="bsm" onclick="psShowStats()" style="padding:5px 10px;font-size:11px">Stats</button>
+      <button class="bsm" onclick="psExportCurrent()" style="padding:5px 10px;font-size:11px">Export</button>
       <button class="bsm" onclick="psSaveAndExit()" style="padding:5px 10px;font-size:11px">Save</button>
     </div>
   </div>
@@ -392,6 +406,10 @@
   <div class="ps-inner-header">
     <button class="ps-back" onclick="psShow('ps-home')">←</button>
     <div class="ps-inner-header-title">Saved Sessions</div>
+    <div class="ps-inner-header-actions">
+      <button class="bsm" onclick="document.getElementById('ps-import-file').click()" style="padding:5px 10px;font-size:11px">Import</button>
+    </div>
+    <input type="file" id="ps-import-file" accept=".json,application/json" style="display:none" onchange="psImportFile(event)">
   </div>
   <div class="ps-sessions-body" id="ps-sessions-body"></div>
 </div>
@@ -426,6 +444,17 @@
   </div>
 </div>
 
+<!-- Export sheet -->
+<div class="ps-anm-overlay" id="ps-exp-overlay">
+  <div class="ps-anm-sheet">
+    <h3 id="ps-exp-title">Export session</h3>
+    <button class="ps-exp-btn" onclick="psDoExport('json')">💾 Backup file (.json)<small>Full data — re-import on any device</small></button>
+    <button class="ps-exp-btn" onclick="psDoExport('csv')">📊 Scores spreadsheet (.csv)<small>Every arrow, end totals, distances</small></button>
+    <button class="ps-exp-btn" onclick="psDoExport('summary')">📋 Copy text summary<small>Quick paste into a message or notes</small></button>
+    <button class="ps-pvm-close" onclick="psExpClose()">Cancel</button>
+  </div>
+</div>
+
 <div class="ps-toast" id="ps-toast"></div>
 
 <script src="shared.js"></script>
@@ -442,7 +471,7 @@ window.onerror = function(msg, src, line, col, err) {
 // ─── STATE ───────────────────────────────────────────────
 let ps = {
   mode: 'score', face: 'target', zoom: 'full',
-  ape: 6, useNums: false, arrowNums: [],
+  ape: 6, useNums: false, numMode: 'off', arrowNums: [],
   name: '', id: null,
   ends: [], currentArrows: [], runningTotal: 0,
   pendingLabel: null, pendingVal: null, pendingNum: null,
@@ -474,6 +503,8 @@ function psStartSetup(mode) {
   // Reset par toggle UI
   document.getElementById('ps-use-par').checked = false;
   document.getElementById('ps-par-section').style.display = 'none';
+  // Reset arrow-number mode UI
+  psSetNumMode('off');
   // Set a sensible default par based on face and APE
   const ape = parseInt(document.getElementById('ps-ape').value) || 6;
   document.getElementById('ps-par-val').value = ps.face === 'field' ? Math.round(ape * 3) : Math.round(ape * 7);
@@ -507,10 +538,19 @@ function psSelectZoom(z) {
   document.getElementById('ps-opt-zoomed').classList.toggle('selected', z==='zoomed');
 }
 
-function psToggleNums() {
-  ps.useNums = document.getElementById('ps-use-nums').checked;
-  document.getElementById('ps-nums-section').style.display = ps.useNums ? '' : 'none';
-  psUpdateChips();
+function psSetNumMode(mode) {
+  ps.numMode = mode;
+  ps.useNums = (mode === 'shaft');
+  ['off','auto','shaft'].forEach(m => {
+    const el = document.getElementById('ps-num-' + m);
+    if (el) el.classList.toggle('selected', m === mode);
+  });
+  document.getElementById('ps-nums-section').style.display = (mode === 'shaft') ? '' : 'none';
+  const hint = document.getElementById('ps-num-hint');
+  if (hint) hint.textContent =
+    mode === 'auto'  ? 'Each arrow is numbered 1, 2, 3… automatically in the order you enter it.' :
+    mode === 'shaft' ? 'You pick which numbered shaft each arrow is — tracks each physical arrow.' : '';
+  if (mode === 'shaft') psUpdateChips();
 }
 
 function psTogglePar() {
@@ -537,10 +577,12 @@ function psUpdateChips() {
 function psStartSession() {
   ps.name = document.getElementById('ps-session-name').value.trim() || 'Session';
   ps.ape = parseInt(document.getElementById('ps-ape').value) || 6;
-  ps.useNums = document.getElementById('ps-use-nums').checked;
+  ps.useNums = (ps.numMode === 'shaft');
   ps.usePar = document.getElementById('ps-use-par').checked;
   ps.parVal = ps.usePar ? (parseInt(document.getElementById('ps-par-val').value) || 25) : null;
-  if (ps.useNums) { const n = parseInt(document.getElementById('ps-arrow-count').value)||6; ps.arrowNums = Array.from({length:n},(_,i)=>i+1); }
+  if (ps.numMode === 'shaft') { const n = parseInt(document.getElementById('ps-arrow-count').value)||6; ps.arrowNums = Array.from({length:n},(_,i)=>i+1); }
+  else if (ps.numMode === 'auto') { ps.arrowNums = Array.from({length:ps.ape},(_,i)=>i+1); }
+  else { ps.arrowNums = []; }
   ps.ends = []; ps.currentArrows = []; ps.runningTotal = 0; ps.id = psGenId();
   document.getElementById('ps-scoring-title').textContent = ps.name;
   // Par legend
@@ -677,8 +719,9 @@ function psBuildScoreBtns() {
 
 function psAddScore(label, val) {
   if (ps.currentArrows.length >= ps.ape) return;
-  if (ps.useNums) { ps.pendingLabel=label; ps.pendingVal=val; psShowAnm(); return; }
-  psPushArrow(label, val, null);
+  if (ps.numMode === 'shaft') { ps.pendingLabel=label; ps.pendingVal=val; psShowAnm(); return; }
+  const seq = (ps.numMode === 'auto') ? ps.currentArrows.length + 1 : null;
+  psPushArrow(label, val, seq);
 }
 
 function psPushArrow(label, val, shaftNum) {
@@ -951,8 +994,9 @@ function psPointerUp(e) {
   document.getElementById('ps-zoom-overlay').style.display='none';
   const nx=psCanvas.nx, ny=psCanvas.ny;
   if (ps.currentArrows.length>=ps.ape) return;
-  if (ps.useNums) { psCanvas.pendingNx=nx; psCanvas.pendingNy=ny; psShowAnm(); return; }
-  psCommitPlot(nx,ny,null);
+  if (ps.numMode === 'shaft') { psCanvas.pendingNx=nx; psCanvas.pendingNy=ny; psShowAnm(); return; }
+  const seq = (ps.numMode === 'auto') ? ps.currentArrows.length + 1 : null;
+  psCommitPlot(nx,ny,seq);
 }
 
 function psCommitPlot(nx,ny,shaftNum) {
@@ -1089,9 +1133,13 @@ function psUpdateEndNav() {
 const PS_KEY = 'sightcalc_plotshot_sessions';
 function psLoadSessions() { try { return JSON.parse(localStorage.getItem(PS_KEY))||[]; } catch { return []; } }
 
+function psSessionData() {
+  return { id:ps.id, name:ps.name, mode:ps.mode, face:ps.face, zoom:ps.zoom, ape:ps.ape, numMode:ps.numMode, useNums:ps.useNums, arrowNums:ps.arrowNums, ends:ps.ends, runningTotal:ps.runningTotal, date:new Date().toISOString() };
+}
+
 function psAutoSave() {
   const sessions=psLoadSessions();
-  const data={ id:ps.id, name:ps.name, mode:ps.mode, face:ps.face, zoom:ps.zoom, ape:ps.ape, useNums:ps.useNums, arrowNums:ps.arrowNums, ends:ps.ends, runningTotal:ps.runningTotal, date:new Date().toISOString() };
+  const data=psSessionData();
   const idx=sessions.findIndex(s=>s.id===ps.id);
   if (idx>=0) sessions[idx]=data; else sessions.unshift(data);
   localStorage.setItem(PS_KEY, JSON.stringify(sessions));
@@ -1113,11 +1161,12 @@ function psShowSessions() {
           <div class="ps-sc-tag">${s.mode==='plot'?'Plot & Score':'Score Only'}</div>
           <div class="ps-sc-tag">${s.face==='field'?'Field':'Target'}</div>
           <div class="ps-sc-tag">${s.ends.length} ends</div>
-          ${s.useNums?'<div class="ps-sc-tag">Arrow #s</div>':''}
+          ${psNumTag(s)}
         </div>
         <div class="ps-sc-score">${s.runningTotal} pts</div>
         <div class="ps-sc-actions">
           <button class="ps-sc-btn" onclick="psResume('${s.id}')">▶ Resume</button>
+          <button class="ps-sc-btn" onclick="psExportSession('${s.id}')">⤴ Export</button>
           <button class="ps-sc-btn danger" onclick="psDeleteSession('${s.id}',this)">Delete</button>
         </div>`;
       body.appendChild(card);
@@ -1128,7 +1177,7 @@ function psShowSessions() {
 
 function psResume(id) {
   const s=psLoadSessions().find(x=>x.id===id); if (!s) return;
-  Object.assign(ps,{id:s.id,name:s.name,mode:s.mode,face:s.face,zoom:s.zoom||'full',ape:s.ape,useNums:s.useNums,arrowNums:s.arrowNums,ends:s.ends,currentArrows:[],runningTotal:s.runningTotal});
+  Object.assign(ps,{id:s.id,name:s.name,mode:s.mode,face:s.face,zoom:s.zoom||'full',ape:s.ape,numMode:s.numMode||(s.useNums?'shaft':'off'),useNums:!!s.useNums,arrowNums:s.arrowNums||[],ends:s.ends,currentArrows:[],runningTotal:s.runningTotal});
   document.getElementById('ps-scoring-title').textContent=ps.name;
   if (ps.mode==='plot') { document.getElementById('ps-score-body').style.display='none'; document.getElementById('ps-plot-body').style.display='flex'; psCanvas.arrows=[]; setTimeout(psInitCanvas,50); }
   else { document.getElementById('ps-score-body').style.display=''; document.getElementById('ps-plot-body').style.display='none'; psBuildScoreBtns(); psRenderCurrentArrows(); psRenderHistory(); }
@@ -1151,6 +1200,126 @@ function psDeleteSession(id,btn) {
   }
 }
 
+function psNumTag(s) {
+  const m = s.numMode || (s.useNums ? 'shaft' : 'off');
+  if (m === 'auto') return '<div class="ps-sc-tag">Auto #s</div>';
+  if (m === 'shaft') return '<div class="ps-sc-tag">Shaft #s</div>';
+  return '';
+}
+
+// ─── EXPORT / IMPORT ─────────────────────
+let psExpData = null;
+function psExportCurrent() {
+  if (!ps.id) { psToast('Start a session first'); return; }
+  psAutoSave();
+  psOpenExportSheet(psSessionData());
+}
+function psExportSession(id) {
+  const s = psLoadSessions().find(x => x.id === id);
+  if (!s) { psToast('Not found'); return; }
+  psOpenExportSheet(s);
+}
+function psOpenExportSheet(data) {
+  psExpData = data;
+  document.getElementById('ps-exp-title').textContent = 'Export — ' + (data.name || 'session');
+  document.getElementById('ps-exp-overlay').classList.add('open');
+}
+function psExpClose() { document.getElementById('ps-exp-overlay').classList.remove('open'); }
+function psSlug(s) {
+  return (s || 'session').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'session';
+}
+function psDownload(filename, text, mime) {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 120);
+}
+function psCsvCell(v) {
+  const s = (v == null) ? '' : String(v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function psBuildCsv(d) {
+  const rows = [];
+  rows.push('Session,' + psCsvCell(d.name));
+  rows.push('Date,' + psCsvCell(d.date));
+  rows.push(['Mode', d.mode, 'Face', d.face, 'Arrows/end', d.ape].map(psCsvCell).join(','));
+  rows.push('');
+  rows.push('End,Arrow in end,Arrow number,Score,Value,Distance(m),Face(cm)');
+  (d.ends || []).forEach((e, ei) => {
+    (e.arrows || []).forEach((a, ai) => {
+      rows.push([ei + 1, ai + 1, (a.shaftNum != null ? a.shaftNum : ''), a.label, a.val, (e.dist != null ? e.dist : ''), (e.faceSize != null ? e.faceSize : '')].map(psCsvCell).join(','));
+    });
+    rows.push([ei + 1, '', '', 'END TOTAL', e.score, '', ''].map(psCsvCell).join(','));
+  });
+  rows.push('');
+  rows.push(['', '', '', 'GRAND TOTAL', d.runningTotal, '', ''].map(psCsvCell).join(','));
+  return rows.join('\n');
+}
+function psBuildSummary(d) {
+  const totalArrows = (d.ends || []).reduce((s, e) => s + (e.arrows ? e.arrows.length : 0), 0);
+  const avg = totalArrows ? (d.runningTotal / totalArrows).toFixed(2) : '—';
+  const lines = [];
+  lines.push(d.name);
+  lines.push(new Date(d.date).toLocaleString('en-AU'));
+  lines.push((d.mode === 'plot' ? 'Plot & Score' : 'Score Only') + ' · ' + (d.face === 'field' ? 'Field' : 'Target'));
+  lines.push('Total ' + d.runningTotal + '  ·  Avg ' + avg + '/arrow  ·  ' + (d.ends || []).length + ' ends');
+  lines.push('');
+  (d.ends || []).forEach((e, ei) => {
+    const labels = (e.arrows || []).map(a => a.shaftNum != null ? a.label + '(' + a.shaftNum + ')' : a.label).join(' ');
+    lines.push('End ' + (ei + 1) + ': ' + labels + '  = ' + e.score + ' (run ' + e.total + ')');
+  });
+  return lines.join('\n');
+}
+function psDoExport(kind) {
+  const d = psExpData; if (!d) return;
+  const base = psSlug(d.name) + '-' + (d.date ? d.date.slice(0, 10) : 'session');
+  if (kind === 'json') {
+    psDownload(base + '.json', JSON.stringify(d, null, 2), 'application/json');
+    psToast('Backup downloaded');
+  } else if (kind === 'csv') {
+    psDownload(base + '.csv', psBuildCsv(d), 'text/csv');
+    psToast('CSV downloaded');
+  } else if (kind === 'summary') {
+    const text = psBuildSummary(d);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => psToast('Summary copied'), () => psDownload(base + '.txt', text, 'text/plain'));
+    } else {
+      psDownload(base + '.txt', text, 'text/plain');
+    }
+  }
+  psExpClose();
+}
+function psImportFile(ev) {
+  const file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      const arr = Array.isArray(parsed) ? parsed : [parsed];
+      const sessions = psLoadSessions();
+      let added = 0;
+      arr.forEach(d => {
+        if (!d || !d.id || !Array.isArray(d.ends)) return;
+        if (sessions.some(s => s.id === d.id)) d.id = psGenId();
+        sessions.unshift(d); added++;
+      });
+      localStorage.setItem(PS_KEY, JSON.stringify(sessions));
+      psToast('Imported ' + added + ' session' + (added !== 1 ? 's' : ''));
+      psShowSessions();
+    } catch (err) {
+      psToast('Could not read that file');
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+}
+document.getElementById('ps-exp-overlay').addEventListener('click', e => {
+  if (e.target.id === 'ps-exp-overlay') psExpClose();
+});
+
 // ─── STATS ───────────────────────────────────────────────
 function psShowStats() {
   const body=document.getElementById('ps-stats-body'); body.innerHTML='';
@@ -1169,9 +1338,9 @@ function psShowStats() {
   </div>`;
 
   // Shaft number ranking — ready for linking to arrow builder
-  if (ps.useNums && ps.arrowNums.length) {
+  if (ps.numMode !== 'off' && ps.arrowNums.length) {
     const section=document.createElement('div'); section.className='ps-arrow-rank';
-    section.innerHTML='<h3>Arrow ranking</h3>';
+    section.innerHTML = '<h3>' + (ps.numMode === 'auto' ? 'By shot order' : 'Arrow ranking') + '</h3>';
     const ranks=ps.arrowNums.map(num=>{
       const shots=ps.ends.flatMap(e=>e.arrows.filter(a=>a.shaftNum===num));
       const avg=shots.length?shots.reduce((s,a)=>s+a.val,0)/shots.length:0;
